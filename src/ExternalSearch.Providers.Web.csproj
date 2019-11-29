@@ -18,12 +18,6 @@
     <DebugType>pdbonly</DebugType>
   </PropertyGroup>
   <ItemGroup>
-    <None Remove="Resources\cluedin.png" />
-  </ItemGroup>
-  <ItemGroup>
-    <EmbeddedResource Include="Resources\cluedin.png" />
-  </ItemGroup>
-  <ItemGroup>
     <PackageReference Include="CluedIn.Crawling" Version="2.6.0-alpha0003" />
     <PackageReference Include="CluedIn.Processing" Version="2.6.0-alpha0003" />
     <PackageReference Include="CluedIn.Processing.Web" Version="2.6.0-alpha0003" />

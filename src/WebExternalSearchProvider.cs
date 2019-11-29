@@ -335,9 +335,9 @@ namespace CluedIn.ExternalSearch.Providers.Web
             }
         }
 
-        public string Icon { get; } = "Resources.cluedin.png";
-        public string Domain { get; } = "To be confirmed";
-        public string About { get; } = "A test Enricher used to work with known data during acceptance tests";
+        public string Icon { get; } = "Resources.web.png";
+        public string Domain { get; } = "N/A";
+        public string About { get; } = "Web enricher allows you to get information about organization through their website";
         public AuthMethods AuthMethods { get; } = null;
         public IEnumerable<Control> Properties { get; } = null;
         public Guide Guide { get; } = null;

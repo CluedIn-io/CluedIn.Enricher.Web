@@ -18,10 +18,16 @@
     <DebugType>pdbonly</DebugType>
   </PropertyGroup>
   <ItemGroup>
-    <PackageReference Include="CluedIn.Crawling" Version="2.6.0-alpha0003" />
-    <PackageReference Include="CluedIn.Processing" Version="2.6.0-alpha0003" />
-    <PackageReference Include="CluedIn.Processing.Web" Version="2.6.0-alpha0003" />
-    <PackageReference Include="CluedIn.Processing.Web.TechnologyDetection" Version="2.6.0-alpha0003" />
+    <None Remove="Resources\web.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="Resources\web.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <PackageReference Include="CluedIn.Crawling" Version="2.5.2" />
+    <PackageReference Include="CluedIn.Processing" Version="2.5.2" />
+    <PackageReference Include="CluedIn.Processing.Web" Version="2.5.2" />
+    <PackageReference Include="CluedIn.Processing.Web.TechnologyDetection" Version="2.5.2" />
     <PackageReference Include="domainname-parser" Version="999.1.15" />
     <PackageReference Include="EntityFramework" Version="6.1.2" />
     <PackageReference Include="Microsoft.Net.Http" Version="2.2.29" />
@@ -30,7 +36,7 @@
   </ItemGroup>
    <ItemGroup>
     <PackageReference Include="CluedIn.ExternalSearch">
-      <Version>2.6.0-alpha0003</Version>
+      <Version>2.5.2</Version>
     </PackageReference>
     <PackageReference Include="MediaToolkit">
       <Version>1.1.0.1</Version>

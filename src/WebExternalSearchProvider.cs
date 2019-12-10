@@ -15,6 +15,9 @@ using System.Net;
 using CluedIn.Core;
 using CluedIn.Core.Data;
 using CluedIn.Core.Data.Parts;
+using CluedIn.Core.Data.Relational;
+using CluedIn.Core.ExternalSearch;
+using CluedIn.Core.Providers;
 using CluedIn.Crawling.Helpers;
 using CluedIn.ExternalSearch.Providers.Web.Model;
 using CluedIn.ExternalSearch.Providers.Web.Vocabularies;
@@ -25,12 +28,13 @@ using Newtonsoft.Json;
 using RestSharp;
 
 using CluedInVocabularies = CluedIn.Core.Data.Vocabularies.Vocabularies;
+using EntityType = CluedIn.Core.Data.EntityType;
 
 namespace CluedIn.ExternalSearch.Providers.Web
 {
     /// <summary>The web external search provider.</summary>
     /// <seealso cref="CluedIn.ExternalSearch.ExternalSearchProviderBase" />
-    public partial class WebExternalSearchProvider : ExternalSearchProviderBase, IExternalSearchResultLogger
+    public partial class WebExternalSearchProvider : ExternalSearchProviderBase, IExternalSearchResultLogger, IExtendedEnricherMetadata
     {
         /**********************************************************************************************************
          * CONSTRUCTORS
@@ -330,5 +334,13 @@ namespace CluedIn.ExternalSearch.Providers.Web
                 }
             }
         }
-    }
+
+        public string Icon { get; } = "Resources.web.png";
+        public string Domain { get; } = "N/A";
+        public string About { get; } = "Web enricher allows you to get information about organization through their website";
+        public AuthMethods AuthMethods { get; } = null;
+        public IEnumerable<Control> Properties { get; } = null;
+        public Guide Guide { get; } = null;
+        public IntegrationType Type { get; } = IntegrationType.Cloud;
+	}
 }

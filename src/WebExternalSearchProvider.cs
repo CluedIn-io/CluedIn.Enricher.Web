@@ -22,7 +22,7 @@ using CluedIn.Crawling.Helpers;
 using CluedIn.ExternalSearch.Providers.Web.Model;
 using CluedIn.ExternalSearch.Providers.Web.Vocabularies;
 using CluedIn.Processing.Web.Models;
-
+using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
 
 using RestSharp;
@@ -125,8 +125,8 @@ namespace CluedIn.ExternalSearch.Providers.Web
 
             if (response.StatusCode != HttpStatusCode.OK)
             {
-                context.Log.Debug(() => "HTTP Response:" + response.StatusCode);
-                context.Log.Debug(() => response.ErrorMessage);
+                context.Log.LogDebug("HTTP Response Code: {ResponseCode}" ,response.StatusCode);
+                context.Log.LogDebug("HTTP Error: {Error}", response.ErrorMessage);
                 throw new Exception("Could not download page: " + response.ErrorMessage);
             }
             yield return new ExternalSearchQueryResult<WebResult>(query, new WebResult(uri, response));
@@ -306,7 +306,7 @@ namespace CluedIn.ExternalSearch.Providers.Web
                 if (key != null)
                     metadata.Properties[key] = uri.PrintIfAvailable();
                 else
-                    context.Log.Error(new { SocialUriType = kp.Key, Uri = uri }, () => "Could not map social link type to organization vocabulary");
+                    context.Log.LogError("Could not map social link type to organization vocabulary {@UriType}",new { SocialUriType = kp.Key, Uri = uri });
             }
 
             if (orgWebSite.Codes != null)
@@ -328,7 +328,7 @@ namespace CluedIn.ExternalSearch.Providers.Web
                             break;
 
                         default:
-                            context.Log.Debug(() => "Unknown code type: " + c.Key);
+                            context.Log.LogDebug("Unknown code type: {Key}", c.Key);
                             break;
                     }
                 }

@@ -50,6 +50,8 @@ namespace CluedIn.ExternalSearch.Providers.Web.Model
 
 		public HttpStatusCode StatusCode { get; set; }
 
+		public bool IsSuccessful { get; }
+
 		[JsonProperty(DefaultValueHandling = DefaultValueHandling.Ignore)]
 		public string StatusDescription { get; set; }
 
@@ -74,5 +76,7 @@ namespace CluedIn.ExternalSearch.Providers.Web.Model
 
 		[JsonIgnore]
 		public Exception ErrorException { get; set; }
+
+		public Version ProtocolVersion { get; set; }
 	}
 }

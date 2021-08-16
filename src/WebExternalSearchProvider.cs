@@ -17,7 +17,9 @@ using CluedIn.Core.Data;
 using CluedIn.Core.Data.Parts;
 using CluedIn.Core.Data.Relational;
 using CluedIn.Core.ExternalSearch;
+using CluedIn.Core.FileTypes;
 using CluedIn.Core.Providers;
+using CluedIn.Core.Utilities;
 using CluedIn.Crawling.Helpers;
 using CluedIn.ExternalSearch.Providers.Web.Model;
 using CluedIn.ExternalSearch.Providers.Web.Vocabularies;
@@ -152,6 +154,36 @@ namespace CluedIn.ExternalSearch.Providers.Web
             if (clue.Data.EntityData.Properties.ContainsKey(WebVocabulary.Website.Logo))
                 this.DownloadPreviewImage(context, clue.Data.EntityData.Properties[WebVocabulary.Website.Logo], clue);
 
+            var orgWebSite = resultItem.Data.GetOrganizationWebsiteMetadata(context);
+
+            try
+            {
+                using (var client = new WebClient())
+                using (var stream = client.OpenRead(orgWebSite.Logo)) //Get Full Quality Image
+                {
+                    var inArray = StreamUtilies.ReadFully(stream);
+                    if (inArray != null)
+                    {
+                        var rawDataPart = new RawDataPart()
+                        {
+                            Type = "/RawData/PreviewImage",
+                            MimeType = MimeType.Jpeg.Code,
+                            FileName = "preview_{0}".FormatWith(code.Key),
+                            RawDataMD5 = FileHashUtility.GetMD5Base64String(inArray),
+                            RawData = Convert.ToBase64String(inArray)
+                        };
+
+                        clue.Details.RawData.Add(rawDataPart);
+
+                        clue.Data.EntityData.PreviewImage = new ImageReferencePart(rawDataPart);
+                    }
+                }
+            }
+            catch (Exception)
+            {
+                //Swallow
+            }
+
             return new[] { clue };
         }
 
@@ -177,6 +209,9 @@ namespace CluedIn.ExternalSearch.Providers.Web
 
             if (metadata.Properties.ContainsKey(WebVocabulary.Website.Logo))
                 return this.DownloadPreviewImageBlob(context, metadata.Properties[WebVocabulary.Website.Logo]);
+
+
+          
 
             return null;
         }
@@ -251,7 +286,7 @@ namespace CluedIn.ExternalSearch.Providers.Web
             }
 
             var technologiesListText = string.Join(", ", orgWebSite.Technologies.Select(t => t.Name).OrderBy(t => t));
-
+         
             metadata.Properties[CluedInVocabularies.CluedInOrganization.Website]    = resultItem.Data.RequestUri.PrintIfAvailable();
 
             metadata.Properties[WebVocabulary.Website.Description]                  = orgWebSite.WebsiteDescription;

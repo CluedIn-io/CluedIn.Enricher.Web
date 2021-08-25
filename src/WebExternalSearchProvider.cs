@@ -370,7 +370,7 @@ namespace CluedIn.ExternalSearch.Providers.Web
             }
         }
 
-        public string Icon { get; } = "Resources.web.png";
+        public string Icon { get; } = "Resources.web.svg";
         public string Domain { get; } = "N/A";
         public string About { get; } = "Web enricher allows you to get information about organization through their website";
         public AuthMethods AuthMethods { get; } = null;

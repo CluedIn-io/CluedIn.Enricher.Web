@@ -1,7 +1,10 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
-  <ItemGroup>
-    <EmbeddedResource Include="Resources\web.png" />
-  </ItemGroup>
+   <ItemGroup>
+     <None Remove="Resources\web.svg" />
+   </ItemGroup>
+   <ItemGroup>
+     <EmbeddedResource Include="Resources\web.svg" />
+   </ItemGroup>
    <ItemGroup>
     <PackageReference Include="CluedIn.Core" />
     <PackageReference Include="CluedIn.ExternalSearch" />

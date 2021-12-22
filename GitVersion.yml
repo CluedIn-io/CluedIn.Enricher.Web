@@ -1,5 +1,5 @@
 mode: ContinuousDeployment
-next-version: 3.2
+next-version: 3.3
 branches:
   master:
     mode: ContinuousDelivery
@@ -7,4 +7,4 @@ branches:
     tag: pr
     increment: None
   develop:
-    tag: alpha1
+    tag: alpha

@@ -36,8 +36,10 @@ namespace CluedIn.ExternalSearch.Providers.Web
 {
     /// <summary>The web external search provider.</summary>
     /// <seealso cref="CluedIn.ExternalSearch.ExternalSearchProviderBase" />
-    public partial class WebExternalSearchProvider : ExternalSearchProviderBase, IExternalSearchResultLogger, IExtendedEnricherMetadata
+    public partial class WebExternalSearchProvider : ExternalSearchProviderBase, IExternalSearchResultLogger, IExtendedEnricherMetadata, IConfigurableExternalSearchProvider
     {
+        private static readonly EntityType[] AcceptedEntityTypes = { EntityType.Organization };
+
         /**********************************************************************************************************
          * CONSTRUCTORS
          **********************************************************************************************************/
@@ -46,7 +48,7 @@ namespace CluedIn.ExternalSearch.Providers.Web
         /// Initializes a new instance of the <see cref="WebExternalSearchProvider" /> class.
         /// </summary>
         public WebExternalSearchProvider()
-            : base(ExternalSearchProviderPriority.First, Constants.ExternalSearchProviders.WebId, EntityType.Organization)
+            : base(ExternalSearchProviderPriority.First, WebExternalSearchConstants.ProviderId, AcceptedEntityTypes)
         {
             JsonSerializerSettings settings = new JsonSerializerSettings();
             JsonUtility.ConfigureDefaultSerializerSettings(settings);
@@ -370,12 +372,44 @@ namespace CluedIn.ExternalSearch.Providers.Web
             }
         }
 
-        public string Icon { get; } = "Resources.web.svg";
-        public string Domain { get; } = "N/A";
-        public string About { get; } = "Web enricher allows you to get information about organization through their website";
-        public AuthMethods AuthMethods { get; } = null;
-        public IEnumerable<Control> Properties { get; } = null;
-        public Guide Guide { get; } = null;
-        public IntegrationType Type { get; } = IntegrationType.Cloud;
-	}
+        public IEnumerable<EntityType> Accepts(IDictionary<string, object> config, IProvider provider)
+        {
+            return AcceptedEntityTypes;
+        }
+
+        public IEnumerable<IExternalSearchQuery> BuildQueries(ExecutionContext context, IExternalSearchRequest request, IDictionary<string, object> config, IProvider provider)
+        {
+            return BuildQueries(context, request);
+        }
+
+        public IEnumerable<IExternalSearchQueryResult> ExecuteSearch(ExecutionContext context, IExternalSearchQuery query, IDictionary<string, object> config, IProvider provider)
+        {
+            var jobData = new WebExternalSearchJobData(config);
+
+            foreach (var externalSearchQueryResult in ExecuteSearch(context, query)) yield return externalSearchQueryResult;
+        }
+
+        public IEnumerable<Clue> BuildClues(ExecutionContext context, IExternalSearchQuery query, IExternalSearchQueryResult result, IExternalSearchRequest request, IDictionary<string, object> config, IProvider provider)
+        {
+            return BuildClues(context, query, result, request);
+        }
+
+        public IEntityMetadata GetPrimaryEntityMetadata(ExecutionContext context, IExternalSearchQueryResult result, IExternalSearchRequest request, IDictionary<string, object> config, IProvider provider)
+        {
+            return GetPrimaryEntityMetadata(context, result, request);
+        }
+
+        public IPreviewImage GetPrimaryEntityPreviewImage(ExecutionContext context, IExternalSearchQueryResult result, IExternalSearchRequest request, IDictionary<string, object> config, IProvider provider)
+        {
+            return GetPrimaryEntityPreviewImage(context, result, request);
+        }
+
+        public string Icon { get; } = WebExternalSearchConstants.Icon;
+        public string Domain { get; } = WebExternalSearchConstants.Domain;
+        public string About { get; } = WebExternalSearchConstants.About;
+        public AuthMethods AuthMethods { get; } = WebExternalSearchConstants.AuthMethods;
+        public IEnumerable<Control> Properties { get; } = WebExternalSearchConstants.Properties;
+        public Guide Guide { get; } = WebExternalSearchConstants.Guide;
+        public IntegrationType Type { get; } = WebExternalSearchConstants.IntegrationType;
+    }
 }

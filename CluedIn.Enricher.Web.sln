@@ -1,6 +1,6 @@
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio Version 16
-VisualStudioVersion = 16.0.28803.452
+# Visual Studio Version 17
+VisualStudioVersion = 17.0.31919.166
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{B2A52533-7FBF-41FE-A0AF-874FC54300B2}"
 	ProjectSection(SolutionItems) = preProject
@@ -21,9 +21,9 @@ EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Build", "Build", "{E1A76004-11EB-44E0-B1D2-B197689E9265}"
 	ProjectSection(SolutionItems) = preProject
 		azure-pipelines.yml = azure-pipelines.yml
-		global.json = global.json
 		Directory.Build.props = Directory.Build.props
 		Directory.Build.targets = Directory.Build.targets
+		global.json = global.json
 	EndProjectSection
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{9BD54E81-D9C8-4419-82B8-8EE6CC7E2647}"
@@ -48,6 +48,8 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ExternalSearch.Providers.We
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ExternalSearch.Web.Integration.Tests", "test\integration\ExternalSearch.Web.Integration.Tests\ExternalSearch.Web.Integration.Tests.csproj", "{DD79FB4E-FB22-41D7-8544-E2947EE6E99C}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ExternalSearch.Providers.Web.Provider", "ExternalSearch.Providers.Web.Provider\ExternalSearch.Providers.Web.Provider.csproj", "{663B5D87-5F55-40CD-9507-3C873A701E33}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -62,6 +64,10 @@ Global
 		{DD79FB4E-FB22-41D7-8544-E2947EE6E99C}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{DD79FB4E-FB22-41D7-8544-E2947EE6E99C}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{DD79FB4E-FB22-41D7-8544-E2947EE6E99C}.Release|Any CPU.Build.0 = Release|Any CPU
+		{663B5D87-5F55-40CD-9507-3C873A701E33}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{663B5D87-5F55-40CD-9507-3C873A701E33}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{663B5D87-5F55-40CD-9507-3C873A701E33}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{663B5D87-5F55-40CD-9507-3C873A701E33}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -76,6 +82,7 @@ Global
 		{17EE3C8D-BAE4-481A-B9CC-1BE878E86124} = {9BD54E81-D9C8-4419-82B8-8EE6CC7E2647}
 		{E5832F12-6BB8-4ACA-AB23-F82888FF3971} = {B2A52533-7FBF-41FE-A0AF-874FC54300B2}
 		{DD79FB4E-FB22-41D7-8544-E2947EE6E99C} = {DBD1964B-DBD9-4C70-96CA-391C34B3D75F}
+		{663B5D87-5F55-40CD-9507-3C873A701E33} = {B2A52533-7FBF-41FE-A0AF-874FC54300B2}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {6A61CB42-80C5-4A83-AC3E-DA41FC875525}

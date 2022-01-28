@@ -66,7 +66,7 @@ namespace CluedIn.ExternalSearch.Providers.Web.Model
 		[JsonProperty(DefaultValueHandling = DefaultValueHandling.Ignore)]
 		public IList<RestResponseCookie> Cookies { get; set; }
 
-		[JsonProperty(DefaultValueHandling = DefaultValueHandling.Ignore)]
+		[JsonIgnore]
 		public IList<Parameter> Headers { get; set; }
 
 		public ResponseStatus ResponseStatus { get; set; }

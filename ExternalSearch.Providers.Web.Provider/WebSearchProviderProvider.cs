@@ -108,6 +108,7 @@ namespace CluedIn.ExternalSearch.Providers.Web.Provider
             throw new NotImplementedException();
         }
 
+        public override bool ScheduleCrawlJobs => false;
         public string Icon { get; } = WebExternalSearchConstants.Icon;
         public string Domain { get; } = WebExternalSearchConstants.Domain;
         public string About { get; } = WebExternalSearchConstants.About;

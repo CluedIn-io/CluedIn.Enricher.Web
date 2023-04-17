@@ -289,44 +289,44 @@ namespace CluedIn.ExternalSearch.Providers.Web
 
             var technologiesListText = string.Join(", ", orgWebSite.Technologies.Select(t => t.Name).OrderBy(t => t));
          
-            metadata.Properties[CluedInVocabularies.CluedInOrganization.Website]    = resultItem.Data.RequestUri.PrintIfAvailable();
+            metadata.Properties[WebVocabulary.Website.URI]    = resultItem.Data.RequestUri.PrintIfAvailable();
 
-            metadata.Properties[WebVocabulary.Website.Description]                  = orgWebSite.WebsiteDescription;
+            metadata.Properties[WebVocabulary.Website.WebsiteDescription]                  = orgWebSite.WebsiteDescription;
             metadata.Properties[WebVocabulary.Website.Title]                        = orgWebSite.WebsiteTitle;
             metadata.Properties[WebVocabulary.Website.Logo]                         = orgWebSite.Logo.PrintIfAvailable();
             metadata.Properties[WebVocabulary.Website.CopyrightEntity]              = orgWebSite.CopyrightEntity;
 
-            metadata.Properties[CluedInVocabularies.CluedInOrganization.OrganizationName]   = orgWebSite.Name;
-            metadata.Properties[CluedInVocabularies.CluedInOrganization.PhoneNumber]        = orgWebSite.PhoneNumber;
-            metadata.Properties[CluedInVocabularies.CluedInOrganization.Fax]                = orgWebSite.FaxNumber;
-            metadata.Properties[CluedInVocabularies.CluedInOrganization.ContactEmail]       = orgWebSite.ContactEmail;
-            metadata.Properties[CluedInVocabularies.CluedInOrganization.Address]            = orgWebSite.Address;
-            metadata.Properties[CluedInVocabularies.CluedInOrganization.AddressCountryCode] = orgWebSite.Country;
-            metadata.Properties[CluedInVocabularies.CluedInOrganization.UsedTechnologies]   = technologiesListText;
+            metadata.Properties[WebVocabulary.Website.Name]   = orgWebSite.Name;
+            metadata.Properties[WebVocabulary.Website.PhoneNumber]        = orgWebSite.PhoneNumber;
+            metadata.Properties[WebVocabulary.Website.FaxNumber]                = orgWebSite.FaxNumber;
+            metadata.Properties[WebVocabulary.Website.ContactEmail]       = orgWebSite.ContactEmail;
+            metadata.Properties[WebVocabulary.Website.Address]            = orgWebSite.Address;
+            metadata.Properties[WebVocabulary.Website.Country] = orgWebSite.Country;
+            metadata.Properties[WebVocabulary.Website.TechnologiesListText]   = technologiesListText;
 
             if (orgWebSite.SchemaOrgOrganization != null)
             {
                 var postalAddress = orgWebSite.SchemaOrgOrganization.Address as SchemaOrgPostalAddress;
                 if (postalAddress != null)
                 {
-                    metadata.Properties[CluedInVocabularies.CluedInOrganization.AddressCountryCode]     = (postalAddress.AddressCountry as SchemaOrgCountry).PrintIfAvailable(v => v.Name) ?? postalAddress.AddressCountry.PrintIfAvailable();
-                    metadata.Properties[CluedInVocabularies.CluedInOrganization.AddressZipCode]         = postalAddress.PostalCode;
-                    metadata.Properties[CluedInVocabularies.CluedInOrganization.Address]                = postalAddress.StreetAddress;
+                    metadata.Properties[WebVocabulary.Website.AddressCountry]     = (postalAddress.AddressCountry as SchemaOrgCountry).PrintIfAvailable(v => v.Name) ?? postalAddress.AddressCountry.PrintIfAvailable();
+                    metadata.Properties[WebVocabulary.Website.PostalCode]         = postalAddress.PostalCode;
+                    metadata.Properties[WebVocabulary.Website.Address]                = postalAddress.StreetAddress;
                 }
                 else if (orgWebSite.SchemaOrgOrganization.Address is SchemaOrgText)
                 {
-                    metadata.Properties[CluedInVocabularies.CluedInOrganization.Address]                = orgWebSite.SchemaOrgOrganization.Address.PrintIfAvailable();
+                    metadata.Properties[WebVocabulary.Website.Address]                = orgWebSite.SchemaOrgOrganization.Address.PrintIfAvailable();
                 }
 
-                metadata.Properties[CluedInVocabularies.CluedInOrganization.FoundingDate]               = orgWebSite.SchemaOrgOrganization.FoundingDate;
-                metadata.Properties[CluedInVocabularies.CluedInOrganization.CodesDunsNumber]            = orgWebSite.SchemaOrgOrganization.Duns;
-                metadata.Properties[CluedInVocabularies.CluedInOrganization.CodesGlobalLocationNumber]  = orgWebSite.SchemaOrgOrganization.GlobalLocationNumber;
-                metadata.Properties[CluedInVocabularies.CluedInOrganization.CodesIsicV4]                = orgWebSite.SchemaOrgOrganization.IsicV4;
-                metadata.Properties[CluedInVocabularies.CluedInOrganization.CodesLeiCode]               = orgWebSite.SchemaOrgOrganization.LeiCode;
-                metadata.Properties[CluedInVocabularies.CluedInOrganization.CodesNAICS]                 = orgWebSite.SchemaOrgOrganization.Naics;
-                metadata.Properties[CluedInVocabularies.CluedInOrganization.TaxId]                      = orgWebSite.SchemaOrgOrganization.TaxId;
-                metadata.Properties[CluedInVocabularies.CluedInOrganization.VatNumber]                  = orgWebSite.SchemaOrgOrganization.VatId;
-                metadata.Properties[CluedInVocabularies.CluedInOrganization.TickerSymbol]               = (orgWebSite.SchemaOrgOrganization as SchemaOrgCorporation).PrintIfAvailable(v => v.TickerSymbol);
+                metadata.Properties[WebVocabulary.Website.FoundingDate]               = orgWebSite.SchemaOrgOrganization.FoundingDate;
+                metadata.Properties[WebVocabulary.Website.Duns]            = orgWebSite.SchemaOrgOrganization.Duns;
+                metadata.Properties[WebVocabulary.Website.GlobalLocationNumber]  = orgWebSite.SchemaOrgOrganization.GlobalLocationNumber;
+                metadata.Properties[WebVocabulary.Website.IsicV4]                = orgWebSite.SchemaOrgOrganization.IsicV4;
+                metadata.Properties[WebVocabulary.Website.LeiCode]               = orgWebSite.SchemaOrgOrganization.LeiCode;
+                metadata.Properties[WebVocabulary.Website.Naics]                 = orgWebSite.SchemaOrgOrganization.Naics;
+                metadata.Properties[WebVocabulary.Website.TaxId]                      = orgWebSite.SchemaOrgOrganization.TaxId;
+                metadata.Properties[WebVocabulary.Website.TaxId]                  = orgWebSite.SchemaOrgOrganization.VatId;
+                metadata.Properties[WebVocabulary.Website.TickerSymbol]               = (orgWebSite.SchemaOrgOrganization as SchemaOrgCorporation).PrintIfAvailable(v => v.TickerSymbol);
 
                 //orgWebSite.SchemaOrgOrganization.Founders
             }
@@ -353,11 +353,11 @@ namespace CluedIn.ExternalSearch.Providers.Web
                     switch (c.Key)
                     {
                         case "cvr":
-                            metadata.Properties[CluedInVocabularies.CluedInOrganization.CodesCVR] = c.Value;
+                            metadata.Properties[WebVocabulary.Website.CVR] = c.Value;
                             break;
 
                         case "googleAnalytics":
-                            metadata.Properties[CluedInVocabularies.CluedInOrganization.CodesGoogleAnalytics] = c.Value;
+                            metadata.Properties[WebVocabulary.Website.GoogleAnalytics] = c.Value;
                             break;
 
                         case "swift":

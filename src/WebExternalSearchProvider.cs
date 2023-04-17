@@ -235,9 +235,9 @@ namespace CluedIn.ExternalSearch.Providers.Web
         /// <summary>Gets the origin entity code.</summary>
         /// <param name="resultItem">The result item.</param>
         /// <returns>The origin entity code.</returns>
-        private EntityCode GetOriginEntityCode(IExternalSearchQueryResult<WebResult> resultItem)
+        private EntityCode GetOriginEntityCode(IExternalSearchQueryResult<WebResult> resultItem, IExternalSearchRequest request)
         {
-            return new EntityCode(EntityType.Organization, this.GetCodeOrigin(), resultItem.Data.RestResponse.ResponseUri.ToString().ToLowerInvariant());
+            return new EntityCode(EntityType.Organization, this.GetCodeOrigin(), request.EntityMetaData.OriginEntityCode.Value);
         }
 
         /// <summary>Gets the code origin.</summary>
@@ -254,25 +254,20 @@ namespace CluedIn.ExternalSearch.Providers.Web
         /// <param name="request"></param>
         private void PopulateMetadata(ExecutionContext context, IEntityMetadata metadata, IExternalSearchQueryResult<WebResult> resultItem, IExternalSearchRequest request)
         {
-            var code = this.GetOriginEntityCode(resultItem);
+            var code = this.GetOriginEntityCode(resultItem, request);
 
             var orgWebSite  = resultItem.Data.GetOrganizationWebsiteMetadata(context);
 
             var name = orgWebSite.Name;
 
-            metadata.EntityType             = EntityType.Organization;
-            metadata.Name                   = name;
-            metadata.DisplayName            = orgWebSite.SchemaOrgOrganization != null ? orgWebSite.SchemaOrgOrganization.LegalName ?? orgWebSite.SchemaOrgOrganization.AlternateName : name;
+            metadata.EntityType             = request.EntityMetaData.EntityType;
+            metadata.Name                   = request.EntityMetaData.Name;
             metadata.OriginEntityCode       = code;
             metadata.Uri                    = orgWebSite.RequestUri;
             metadata.Description            = orgWebSite.WebsiteDescription;
 
             metadata.Codes.Add(code);
-            metadata.Codes.Add(new EntityCode(EntityType.Organization, this.GetCodeOrigin(), resultItem.Data.RestResponse.ResponseUri.Host.ToLowerInvariant()));
-            metadata.Codes.Add(new EntityCode(EntityType.Web.Site, CodeOrigin.CluedIn, orgWebSite.ResponseUri.ToString().ToLowerInvariant())); // Force result to match back to original query
-
-            if (request.EntityMetaData != null && request.EntityMetaData.OriginEntityCode != null)
-                metadata.Codes.Add(request.EntityMetaData.OriginEntityCode);
+            metadata.Codes.Add(request.EntityMetaData.OriginEntityCode);
 
             //// Aliases
             if (orgWebSite.SchemaOrgOrganization != null)

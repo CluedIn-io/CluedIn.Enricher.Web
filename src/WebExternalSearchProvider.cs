@@ -146,7 +146,7 @@ namespace CluedIn.ExternalSearch.Providers.Web
         {
             var resultItem = result.As<WebResult>();
 
-            var code = this.GetOriginEntityCode(resultItem);
+            var code = this.GetOriginEntityCode(resultItem, request);
 
             var clue = new Clue(code, context.Organization);
             clue.Data.OriginProviderDefinitionId = this.Id;

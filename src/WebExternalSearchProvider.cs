@@ -85,9 +85,9 @@ namespace CluedIn.ExternalSearch.Providers.Web
 
             if (website != null)
             {
-                var values = website.SelectMany(v => v.Split(new[] { ",", ";", "|", " " }, StringSplitOptions.RemoveEmptyEntries)).ToHashSetEx();
+                var values = website.SelectMany(v => v.Split(new[] { ",", ";", "|", " " }, StringSplitOptions.RemoveEmptyEntries)).ToHashSet();
 
-                values = values.Select(UriUtility.NormalizeHttpUri).ToHashSetEx();
+                values = values.Select(UriUtility.NormalizeHttpUri).ToHashSet();
 
                 foreach (var value in values.Where(v => !requestUriFilter(v)))
                     yield return new ExternalSearchQuery(this, entityType, ExternalSearchQueryParameter.Uri, value);

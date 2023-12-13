@@ -14,7 +14,8 @@ namespace CluedIn.ExternalSearch.Providers.Web
 
         public struct KeyName
         {
-            public const string ApiToken = "apiToken";
+            public const string AcceptedEntityType = "acceptedEntityType";
+            public const string WebsiteKey = "websiteKey";
 
         }
 
@@ -25,6 +26,22 @@ namespace CluedIn.ExternalSearch.Providers.Web
         public static AuthMethods AuthMethods { get; set; } = new AuthMethods
         {
             token = new List<Control>()
+            {
+                new Control()
+                {
+                    displayName = "Accepted Entity Type",
+                    type = "input",
+                    isRequired = false,
+                    name = KeyName.AcceptedEntityType
+                },
+                new Control()
+                {
+                    displayName = "Website vocab key",
+                    type = "input",
+                    isRequired = false,
+                    name = KeyName.WebsiteKey
+                },
+            }
         };
 
         public static IEnumerable<Control> Properties { get; set; } = new List<Control>()

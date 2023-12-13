@@ -101,7 +101,7 @@ namespace CluedIn.ExternalSearch.Providers.Web
             }
             else
             {
-                website = request.QueryParameters.GetValue(CluedIn.Core.Data.Vocabularies.Vocabularies.CluedInOrganization.Website, new HashSet<string>()).ToHashSetEx();
+                website = request.QueryParameters.GetValue(CluedIn.Core.Data.Vocabularies.Vocabularies.CluedInOrganization.Website, new HashSet<string>()).ToHashSet();
             }
 
             if (website != null)

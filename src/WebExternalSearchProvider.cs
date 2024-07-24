@@ -38,7 +38,11 @@ namespace CluedIn.ExternalSearch.Providers.Web
     /// <seealso cref="CluedIn.ExternalSearch.ExternalSearchProviderBase" />
     public partial class WebExternalSearchProvider : ExternalSearchProviderBase, IExternalSearchResultLogger, IExtendedEnricherMetadata, IConfigurableExternalSearchProvider
     {
-        private static readonly EntityType[] AcceptedEntityTypes = { EntityType.Organization };
+        /**********************************************************************************************************
+         * FIELDS
+         **********************************************************************************************************/
+
+        private static readonly EntityType[] DefaultAcceptedEntityTypes = { EntityType.Organization };
 
         /**********************************************************************************************************
          * CONSTRUCTORS
@@ -48,7 +52,7 @@ namespace CluedIn.ExternalSearch.Providers.Web
         /// Initializes a new instance of the <see cref="WebExternalSearchProvider" /> class.
         /// </summary>
         public WebExternalSearchProvider()
-            : base(ExternalSearchProviderPriority.First, WebExternalSearchConstants.ProviderId, AcceptedEntityTypes)
+            : base(ExternalSearchProviderPriority.First, WebExternalSearchConstants.ProviderId, DefaultAcceptedEntityTypes)
         {
             JsonSerializerSettings settings = new JsonSerializerSettings();
             JsonUtility.ConfigureDefaultSerializerSettings(settings);
@@ -64,27 +68,20 @@ namespace CluedIn.ExternalSearch.Providers.Web
          * METHODS
          **********************************************************************************************************/
 
-        /// <summary>Builds the queries.</summary>
-        /// <param name="context">The context.</param>
-        /// <param name="request">The request.</param>
-        /// <returns>The search queries.</returns>
         public override IEnumerable<IExternalSearchQuery> BuildQueries(ExecutionContext context, IExternalSearchRequest request)
         {
+            // Note: Since this is a configurable external search provider, this should never be called.
+
             foreach (var externalSearchQuery in InternalBuildQueries(context, request))
             {
                 yield return externalSearchQuery;
             }
         }
+
         private IEnumerable<IExternalSearchQuery> InternalBuildQueries(ExecutionContext context, IExternalSearchRequest request, IDictionary<string, object> config = null)
         {
-            if (config.TryGetValue(WebExternalSearchConstants.KeyName.AcceptedEntityType, out var customType) && !string.IsNullOrWhiteSpace(customType.ToString()))
-            {
-                if (!request.EntityMetaData.EntityType.Is(customType.ToString()))
-                {
-                    yield break;
-                }
-            }
-            else if (!this.Accepts(request.EntityMetaData.EntityType)) yield break;
+            if (!this.Accepts(config, request.EntityMetaData.EntityType))
+                yield break;
 
             var existingResults = request.GetQueryResults<WebResult>(this).ToList();
 
@@ -388,9 +385,25 @@ namespace CluedIn.ExternalSearch.Providers.Web
             }
         }
 
-        public IEnumerable<EntityType> Accepts(IDictionary<string, object> config, IProvider provider)
+        public IEnumerable<EntityType> Accepts(IDictionary<string, object> config, IProvider provider) => this.Accepts(config);
+
+        private IEnumerable<EntityType> Accepts(IDictionary<string, object> config)
         {
-            return AcceptedEntityTypes;
+            if (config.TryGetValue(WebExternalSearchConstants.KeyName.AcceptedEntityType, out var acceptedEntityTypeObj) && acceptedEntityTypeObj is string acceptedEntityType && !string.IsNullOrWhiteSpace(acceptedEntityType))
+            {
+                // If configured, only accept the configured entity types
+                return new EntityType[] { acceptedEntityType };
+            }
+
+            // Fallback to default accepted entity types
+            return DefaultAcceptedEntityTypes;
+        }
+
+        private bool Accepts(IDictionary<string, object> config, EntityType entityTypeToEvaluate)
+        {
+            var configurableAcceptedEntityTypes = this.Accepts(config).ToArray();
+
+            return configurableAcceptedEntityTypes.Any(entityTypeToEvaluate.Is);
         }
 
         public IEnumerable<IExternalSearchQuery> BuildQueries(ExecutionContext context, IExternalSearchRequest request, IDictionary<string, object> config, IProvider provider)

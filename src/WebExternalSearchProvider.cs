@@ -34,6 +34,8 @@ using EntityType = CluedIn.Core.Data.EntityType;
 
 namespace CluedIn.ExternalSearch.Providers.Web
 {
+    using CluedIn.ExternalSearch.Provider;
+
     /// <summary>The web external search provider.</summary>
     /// <seealso cref="CluedIn.ExternalSearch.ExternalSearchProviderBase" />
     public partial class WebExternalSearchProvider : ExternalSearchProviderBase, IExternalSearchResultLogger, IExtendedEnricherMetadata, IConfigurableExternalSearchProvider
@@ -56,10 +58,8 @@ namespace CluedIn.ExternalSearch.Providers.Web
         {
             JsonSerializerSettings settings = new JsonSerializerSettings();
             JsonUtility.ConfigureDefaultSerializerSettings(settings);
-            settings.TypeNameHandling       = TypeNameHandling.Objects;
+            settings.TypeNameHandling               = TypeNameHandling.Objects;
             settings.TypeNameAssemblyFormatHandling = TypeNameAssemblyFormatHandling.Simple;
-
-            //settings.Binder = new TypeNameSerializationBinder();
 
             this.jsonSerializer = JsonSerializer.Create(settings);
         }
@@ -68,17 +68,28 @@ namespace CluedIn.ExternalSearch.Providers.Web
          * METHODS
          **********************************************************************************************************/
 
-        public override IEnumerable<IExternalSearchQuery> BuildQueries(ExecutionContext context, IExternalSearchRequest request)
-        {
-            // Note: Since this is a configurable external search provider, this should never be called.
+        public IEnumerable<EntityType> Accepts(IDictionary<string, object> config, IProvider provider) => this.Accepts(config);
 
-            foreach (var externalSearchQuery in InternalBuildQueries(context, request))
+        private IEnumerable<EntityType> Accepts(IDictionary<string, object> config)
+        {
+            if (config.TryGetValue(WebExternalSearchConstants.KeyName.AcceptedEntityType, out var acceptedEntityTypeObj) && acceptedEntityTypeObj is string acceptedEntityType && !string.IsNullOrWhiteSpace(acceptedEntityType))
             {
-                yield return externalSearchQuery;
+                // If configured, only accept the configured entity types
+                return new EntityType[] { acceptedEntityType };
             }
+
+            // Fallback to default accepted entity types
+            return DefaultAcceptedEntityTypes;
         }
 
-        private IEnumerable<IExternalSearchQuery> InternalBuildQueries(ExecutionContext context, IExternalSearchRequest request, IDictionary<string, object> config = null)
+        private bool Accepts(IDictionary<string, object> config, EntityType entityTypeToEvaluate)
+        {
+            var configurableAcceptedEntityTypes = this.Accepts(config).ToArray();
+
+            return configurableAcceptedEntityTypes.Any(entityTypeToEvaluate.Is);
+        }
+
+        public IEnumerable<IExternalSearchQuery> BuildQueries(ExecutionContext context, IExternalSearchRequest request, IDictionary<string, object> config, IProvider provider)
         {
             if (!this.Accepts(config, request.EntityMetaData.EntityType))
                 yield break;
@@ -112,11 +123,7 @@ namespace CluedIn.ExternalSearch.Providers.Web
             }
         }
 
-        /// <summary>Executes the search.</summary>
-        /// <param name="context">The context.</param>
-        /// <param name="query">The query.</param>
-        /// <returns>The results.</returns>
-        public override IEnumerable<IExternalSearchQueryResult> ExecuteSearch(ExecutionContext context, IExternalSearchQuery query)
+        public IEnumerable<IExternalSearchQueryResult> ExecuteSearch(ExecutionContext context, IExternalSearchQuery query, IDictionary<string, object> config, IProvider provider)
         {
             var uriText = query.QueryParameters[ExternalSearchQueryParameter.Uri].FirstOrDefault();
 
@@ -154,13 +161,7 @@ namespace CluedIn.ExternalSearch.Providers.Web
             yield return new ExternalSearchQueryResult<WebResult>(query, new WebResult(uri, response));
         }
 
-        /// <summary>Builds the clues.</summary>
-        /// <param name="context">The context.</param>
-        /// <param name="query">The query.</param>
-        /// <param name="result">The result.</param>
-        /// <param name="request">The request.</param>
-        /// <returns>The clues.</returns>
-        public override IEnumerable<Clue> BuildClues(ExecutionContext context, IExternalSearchQuery query, IExternalSearchQueryResult result, IExternalSearchRequest request)
+        public IEnumerable<Clue> BuildClues(ExecutionContext context, IExternalSearchQuery query, IExternalSearchQueryResult result, IExternalSearchRequest request, IDictionary<string, object> config, IProvider provider)
         {
             var resultItem = result.As<WebResult>();
 
@@ -207,40 +208,31 @@ namespace CluedIn.ExternalSearch.Providers.Web
             return new[] { clue };
         }
 
-        /// <summary>Gets the primary entity metadata.</summary>
-        /// <param name="context">The context.</param>
-        /// <param name="result">The result.</param>
-        /// <param name="request">The request.</param>
-        /// <returns>The primary entity metadata.</returns>
-        public override IEntityMetadata GetPrimaryEntityMetadata(ExecutionContext context, IExternalSearchQueryResult result, IExternalSearchRequest request)
+        public IEntityMetadata GetPrimaryEntityMetadata(ExecutionContext context, IExternalSearchQueryResult result, IExternalSearchRequest request, IDictionary<string, object> config, IProvider provider)
         {
             var resultItem = result.As<WebResult>();
             return this.CreateMetadata(context, resultItem, request);
         }
 
-        /// <summary>Gets the preview image.</summary>
-        /// <param name="context">The context.</param>
-        /// <param name="result">The result.</param>
-        /// <param name="request">The request.</param>
-        /// <returns>The preview image.</returns>
         public override IPreviewImage GetPrimaryEntityPreviewImage(ExecutionContext context, IExternalSearchQueryResult result, IExternalSearchRequest request)
         {
-            var metadata = GetPrimaryEntityMetadata(context, result, request);
+            // Note: This needs to be cleaned up, but since config and provider is not used in GetPrimaryEntityMetadata this is fine.
+            var dummyConfig   = new Dictionary<string, object>();
+            var dummyProvider = new DefaultExternalSearchProviderProvider(context.ApplicationContext, this);
+
+            return GetPrimaryEntityPreviewImage(context, result, request, dummyConfig, dummyProvider);
+        }
+
+        public IPreviewImage GetPrimaryEntityPreviewImage(ExecutionContext context, IExternalSearchQueryResult result, IExternalSearchRequest request, IDictionary<string, object> config, IProvider provider)
+        {
+            var metadata = GetPrimaryEntityMetadata(context, result, request, config, provider);
 
             if (metadata.Properties.ContainsKey(WebVocabulary.Website.Logo))
                 return this.DownloadPreviewImageBlob(context, metadata.Properties[WebVocabulary.Website.Logo]);
 
-
-          
-
             return null;
         }
 
-        /// <summary>Creates the metadata.</summary>
-        /// <param name="context">The context.</param>
-        /// <param name="resultItem">The result item.</param>
-        /// <param name="request"></param>
-        /// <returns>The metadata.</returns>
         private IEntityMetadata CreateMetadata(ExecutionContext context, IExternalSearchQueryResult<WebResult> resultItem, IExternalSearchRequest request)
         {
             var metadata = new EntityMetadataPart();
@@ -250,26 +242,16 @@ namespace CluedIn.ExternalSearch.Providers.Web
             return metadata;
         }
 
-        /// <summary>Gets the origin entity code.</summary>
-        /// <param name="resultItem">The result item.</param>
-        /// <returns>The origin entity code.</returns>
         private EntityCode GetOriginEntityCode(IExternalSearchQueryResult<WebResult> resultItem, IExternalSearchRequest request)
         {
             return new EntityCode(EntityType.Organization, this.GetCodeOrigin(), request.EntityMetaData.OriginEntityCode.Value);
         }
 
-        /// <summary>Gets the code origin.</summary>
-        /// <returns>The code origin</returns>
         private CodeOrigin GetCodeOrigin()
         {
             return CodeOrigin.CluedIn.CreateSpecific("website");
         }
 
-        /// <summary>Populates the metadata.</summary>
-        /// <param name="context">The context.</param>
-        /// <param name="metadata">The metadata.</param>
-        /// <param name="resultItem">The result item.</param>
-        /// <param name="request"></param>
         private void PopulateMetadata(ExecutionContext context, IEntityMetadata metadata, IExternalSearchQueryResult<WebResult> resultItem, IExternalSearchRequest request)
         {
             var code = this.GetOriginEntityCode(resultItem, request);
@@ -385,53 +367,16 @@ namespace CluedIn.ExternalSearch.Providers.Web
             }
         }
 
-        public IEnumerable<EntityType> Accepts(IDictionary<string, object> config, IProvider provider) => this.Accepts(config);
+        // Since this is a configurable external search provider, theses methods should never be called
+        public override IEnumerable<IExternalSearchQuery> BuildQueries(ExecutionContext context, IExternalSearchRequest request) => throw new NotSupportedException();
+        public override bool Accepts(EntityType entityType) => throw new NotSupportedException();
+        public override IEnumerable<IExternalSearchQueryResult> ExecuteSearch(ExecutionContext context, IExternalSearchQuery query) => throw new NotSupportedException();
+        public override IEnumerable<Clue> BuildClues(ExecutionContext context, IExternalSearchQuery query, IExternalSearchQueryResult result, IExternalSearchRequest request) => throw new NotSupportedException();
+        public override IEntityMetadata GetPrimaryEntityMetadata(ExecutionContext context, IExternalSearchQueryResult result, IExternalSearchRequest request) => throw new NotSupportedException();
 
-        private IEnumerable<EntityType> Accepts(IDictionary<string, object> config)
-        {
-            if (config.TryGetValue(WebExternalSearchConstants.KeyName.AcceptedEntityType, out var acceptedEntityTypeObj) && acceptedEntityTypeObj is string acceptedEntityType && !string.IsNullOrWhiteSpace(acceptedEntityType))
-            {
-                // If configured, only accept the configured entity types
-                return new EntityType[] { acceptedEntityType };
-            }
-
-            // Fallback to default accepted entity types
-            return DefaultAcceptedEntityTypes;
-        }
-
-        private bool Accepts(IDictionary<string, object> config, EntityType entityTypeToEvaluate)
-        {
-            var configurableAcceptedEntityTypes = this.Accepts(config).ToArray();
-
-            return configurableAcceptedEntityTypes.Any(entityTypeToEvaluate.Is);
-        }
-
-        public IEnumerable<IExternalSearchQuery> BuildQueries(ExecutionContext context, IExternalSearchRequest request, IDictionary<string, object> config, IProvider provider)
-        {
-            return InternalBuildQueries(context, request, config);
-        }
-
-        public IEnumerable<IExternalSearchQueryResult> ExecuteSearch(ExecutionContext context, IExternalSearchQuery query, IDictionary<string, object> config, IProvider provider)
-        {
-            var jobData = new WebExternalSearchJobData(config);
-
-            foreach (var externalSearchQueryResult in ExecuteSearch(context, query)) yield return externalSearchQueryResult;
-        }
-
-        public IEnumerable<Clue> BuildClues(ExecutionContext context, IExternalSearchQuery query, IExternalSearchQueryResult result, IExternalSearchRequest request, IDictionary<string, object> config, IProvider provider)
-        {
-            return BuildClues(context, query, result, request);
-        }
-
-        public IEntityMetadata GetPrimaryEntityMetadata(ExecutionContext context, IExternalSearchQueryResult result, IExternalSearchRequest request, IDictionary<string, object> config, IProvider provider)
-        {
-            return GetPrimaryEntityMetadata(context, result, request);
-        }
-
-        public IPreviewImage GetPrimaryEntityPreviewImage(ExecutionContext context, IExternalSearchQueryResult result, IExternalSearchRequest request, IDictionary<string, object> config, IProvider provider)
-        {
-            return GetPrimaryEntityPreviewImage(context, result, request);
-        }
+        /**********************************************************************************************************
+         * PROPERTIES
+         **********************************************************************************************************/
 
         public string Icon { get; } = WebExternalSearchConstants.Icon;
         public string Domain { get; } = WebExternalSearchConstants.Domain;

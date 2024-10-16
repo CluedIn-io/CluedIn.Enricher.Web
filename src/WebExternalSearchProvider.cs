@@ -34,6 +34,7 @@ using EntityType = CluedIn.Core.Data.EntityType;
 
 namespace CluedIn.ExternalSearch.Providers.Web
 {
+    using AngleSharp.Io;
     using CluedIn.ExternalSearch.Provider;
 
     /// <summary>The web external search provider.</summary>
@@ -183,20 +184,22 @@ namespace CluedIn.ExternalSearch.Providers.Web
                 using (var stream = client.OpenRead(orgWebSite.Logo)) //Get Full Quality Image
                 {
                     var inArray = StreamUtilies.ReadFully(stream);
-                    if (inArray != null)
+                    var mimeType = client.ResponseHeaders["Content-Type"];
+                    if (inArray != null && !string.IsNullOrEmpty(mimeType) && mimeType.StartsWith("image/", StringComparison.OrdinalIgnoreCase))
                     {
+
                         var rawDataPart = new RawDataPart()
-                        {
-                            Type = "/RawData/PreviewImage",
-                            MimeType = MimeType.Jpeg.Code,
-                            FileName = "preview_{0}".FormatWith(code.Key),
-                            RawDataMD5 = FileHashUtility.GetMD5Base64String(inArray),
-                            RawData = Convert.ToBase64String(inArray)
-                        };
+                    {
+                        Type = "/RawData/PreviewImage",
+                        MimeType = mimeType,
+                        FileName = "preview_{0}".FormatWith(code.Key),
+                        RawDataMD5 = FileHashUtility.GetMD5Base64String(inArray),
+                        RawData = Convert.ToBase64String(inArray)
+                    };
 
-                        clue.Details.RawData.Add(rawDataPart);
+                    clue.Details.RawData.Add(rawDataPart);
 
-                        clue.Data.EntityData.PreviewImage = new ImageReferencePart(rawDataPart);
+                    clue.Data.EntityData.PreviewImage = new ImageReferencePart(rawDataPart);
                     }
                 }
             }

@@ -36,6 +36,7 @@ namespace CluedIn.ExternalSearch.Providers.Web
 {
     using AngleSharp.Io;
     using CluedIn.ExternalSearch.Provider;
+    using Nest;
 
     /// <summary>The web external search provider.</summary>
     /// <seealso cref="CluedIn.ExternalSearch.ExternalSearchProviderBase" />
@@ -178,29 +179,42 @@ namespace CluedIn.ExternalSearch.Providers.Web
 
             var orgWebSite = resultItem.Data.GetOrganizationWebsiteMetadata(context);
 
+            var tempUri = string.Empty;
+
+            if (orgWebSite.Logo != null && orgWebSite.Logo.ToString().StartsWith("/"))
+            {
+                tempUri = orgWebSite.Logo.ToString()[1..];
+            }
+
+            if (!string.IsNullOrEmpty(tempUri) && !Uri.IsWellFormedUriString(tempUri, UriKind.Absolute))
+            {
+                orgWebSite.Logo = new Uri(orgWebSite.ResponseUri.AbsoluteUri + tempUri);
+            }
+
             try
             {
-                using (var client = new WebClient())
-                using (var stream = client.OpenRead(orgWebSite.Logo)) //Get Full Quality Image
-                {
-                    var inArray = StreamUtilies.ReadFully(stream);
-                    var mimeType = client.ResponseHeaders["Content-Type"];
-                    if (inArray != null && !string.IsNullOrEmpty(mimeType) && mimeType.StartsWith("image/", StringComparison.OrdinalIgnoreCase))
-                    {
+                var client = new RestClient();
+                var req = new RestRequest(orgWebSite.Logo.ToString(), Method.GET);
+                req.AddHeader("Accept", "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8");
+                req.AddHeader("User-Agent", "Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/56.0.2924.76 Safari/537.36");
 
-                        var rawDataPart = new RawDataPart()
+                var response = client.Execute(req); // Get Image
+
+                if (response.IsSuccessful && response.ContentType != null && response.ContentType.StartsWith("image/", StringComparison.OrdinalIgnoreCase))
+                {
+                    var inArray = response.RawBytes;
+
+                    var rawDataPart = new RawDataPart()
                     {
                         Type = "/RawData/PreviewImage",
-                        MimeType = mimeType,
-                        FileName = "preview_{0}".FormatWith(code.Key),
+                        MimeType = response.ContentType,
+                        FileName = $"preview_{code.Key}",
                         RawDataMD5 = FileHashUtility.GetMD5Base64String(inArray),
                         RawData = Convert.ToBase64String(inArray)
                     };
 
                     clue.Details.RawData.Add(rawDataPart);
-
                     clue.Data.EntityData.PreviewImage = new ImageReferencePart(rawDataPart);
-                    }
                 }
             }
             catch (Exception)

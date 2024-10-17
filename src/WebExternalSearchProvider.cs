@@ -179,22 +179,15 @@ namespace CluedIn.ExternalSearch.Providers.Web
 
             var orgWebSite = resultItem.Data.GetOrganizationWebsiteMetadata(context);
 
-            var tempUri = string.Empty;
-
-            if (orgWebSite.Logo != null && orgWebSite.Logo.ToString().StartsWith("/"))
-            {
-                tempUri = orgWebSite.Logo.ToString()[1..];
-            }
-
-            if (!string.IsNullOrEmpty(tempUri) && !Uri.IsWellFormedUriString(tempUri, UriKind.Absolute))
-            {
-                orgWebSite.Logo = new Uri(orgWebSite.ResponseUri.AbsoluteUri + tempUri);
-            }
-
             try
             {
+                if (!string.IsNullOrEmpty(orgWebSite.Logo?.ToString()) && !Uri.IsWellFormedUriString(orgWebSite.Logo?.ToString(), UriKind.Absolute))
+                {
+                    orgWebSite.Logo = new Uri(new Uri(orgWebSite.ResponseUri.AbsoluteUri), orgWebSite.Logo.ToString());
+                }
+
                 var client = new RestClient();
-                var req = new RestRequest(orgWebSite.Logo.ToString(), Method.GET);
+                var req = new RestRequest(orgWebSite.Logo?.ToString(), Method.GET);
                 req.AddHeader("Accept", "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8");
                 req.AddHeader("User-Agent", "Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/56.0.2924.76 Safari/537.36");
 

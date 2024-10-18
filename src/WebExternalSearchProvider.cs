@@ -34,9 +34,7 @@ using EntityType = CluedIn.Core.Data.EntityType;
 
 namespace CluedIn.ExternalSearch.Providers.Web
 {
-    using AngleSharp.Io;
     using CluedIn.ExternalSearch.Provider;
-    using Nest;
 
     /// <summary>The web external search provider.</summary>
     /// <seealso cref="CluedIn.ExternalSearch.ExternalSearchProviderBase" />

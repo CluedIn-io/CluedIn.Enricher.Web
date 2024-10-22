@@ -34,6 +34,7 @@ using EntityType = CluedIn.Core.Data.EntityType;
 
 namespace CluedIn.ExternalSearch.Providers.Web
 {
+    using Azure;
     using CluedIn.ExternalSearch.Provider;
 
     /// <summary>The web external search provider.</summary>
@@ -200,9 +201,9 @@ namespace CluedIn.ExternalSearch.Providers.Web
                     }
                 }
             }
-            catch (Exception)
+            catch (Exception ex)
             {
-                //Swallow
+                context.Log.LogDebug("Failed to retrieve organization's logo: {errorMessage}", ex.Message);
             }
 
             return new[] { clue };

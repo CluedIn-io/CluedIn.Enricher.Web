@@ -200,9 +200,9 @@ namespace CluedIn.ExternalSearch.Providers.Web
                     }
                 }
             }
-            catch (Exception)
+            catch (Exception ex)
             {
-                //Swallow
+                context.Log.LogDebug("Failed to retrieve organization's logo: {errorMessage}", ex.Message);
             }
 
             return new[] { clue };

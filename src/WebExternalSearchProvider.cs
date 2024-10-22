@@ -34,7 +34,6 @@ using EntityType = CluedIn.Core.Data.EntityType;
 
 namespace CluedIn.ExternalSearch.Providers.Web
 {
-    using Azure;
     using CluedIn.ExternalSearch.Provider;
 
     /// <summary>The web external search provider.</summary>

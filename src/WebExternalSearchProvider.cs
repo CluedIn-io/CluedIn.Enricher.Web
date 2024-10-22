@@ -179,23 +179,30 @@ namespace CluedIn.ExternalSearch.Providers.Web
 
             try
             {
-                using (var client = new WebClient())
-                using (var stream = client.OpenRead(orgWebSite.Logo)) //Get Full Quality Image
+                if (!string.IsNullOrEmpty(orgWebSite.Logo?.ToString()))
                 {
-                    var inArray = StreamUtilies.ReadFully(stream);
-                    if (inArray != null)
+                    orgWebSite.Logo = new Uri(new Uri(orgWebSite.ResponseUri.AbsoluteUri), orgWebSite.Logo.ToString());
+                    var client = new RestClient();
+                    var req = new RestRequest(orgWebSite.Logo.ToString(), Method.GET);
+                    req.AddHeader("Accept", "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8");
+                    req.AddHeader("User-Agent", "Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/56.0.2924.76 Safari/537.36");
+
+                    var response = client.Execute(req); // Get Image
+
+                    if (response.IsSuccessful && response.ContentType != null && response.ContentType.StartsWith("image/", StringComparison.OrdinalIgnoreCase))
                     {
+                        var inArray = response.RawBytes;
+
                         var rawDataPart = new RawDataPart()
                         {
                             Type = "/RawData/PreviewImage",
-                            MimeType = MimeType.Jpeg.Code,
-                            FileName = "preview_{0}".FormatWith(code.Key),
+                            MimeType = response.ContentType,
+                            FileName = $"preview_{code.Key}",
                             RawDataMD5 = FileHashUtility.GetMD5Base64String(inArray),
                             RawData = Convert.ToBase64String(inArray)
                         };
 
                         clue.Details.RawData.Add(rawDataPart);
-
                         clue.Data.EntityData.PreviewImage = new ImageReferencePart(rawDataPart);
                     }
                 }

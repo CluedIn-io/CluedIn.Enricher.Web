@@ -251,7 +251,7 @@ namespace CluedIn.ExternalSearch.Providers.Web
 
         private EntityCode GetOriginEntityCode(IExternalSearchQueryResult<WebResult> resultItem, IExternalSearchRequest request)
         {
-            return new EntityCode(EntityType.Organization, this.GetCodeOrigin(), request.EntityMetaData.OriginEntityCode.Value);
+            return new EntityCode(request.EntityMetaData.EntityType, this.GetCodeOrigin(), request.EntityMetaData.OriginEntityCode.Value);
         }
 
         private CodeOrigin GetCodeOrigin()

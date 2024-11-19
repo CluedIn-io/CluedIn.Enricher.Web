@@ -33,7 +33,7 @@ namespace CluedIn.ExternalSearch.Providers.Web
                     Type = "input",
                     IsRequired = true,
                     Name = KeyName.AcceptedEntityType,
-                    Help = "The entity type that defines the golden records you want to enrich. (e.g., /Organization)",
+                    Help = "The entity type that defines the golden records you want to enrich (e.g., /Organization).",
                 },
                 new Control()
                 {
@@ -41,7 +41,7 @@ namespace CluedIn.ExternalSearch.Providers.Web
                     Type = "input",
                     IsRequired = false,
                     Name = KeyName.WebsiteKey,
-                    Help = "The vocabulary key that contains the websites of companies.",
+                    Help = "The vocabulary key that contains the websites of companies you want to enrich (e.g., organization.website).",
                 },
             }
         };

@@ -26,7 +26,7 @@ using CluedIn.ExternalSearch.Providers.Web.Vocabularies;
 using CluedIn.Processing.Web.Models;
 using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
-
+using System.Text.RegularExpressions;
 using RestSharp;
 
 using CluedInVocabularies = CluedIn.Core.Data.Vocabularies.Vocabularies;
@@ -116,7 +116,7 @@ namespace CluedIn.ExternalSearch.Providers.Web
             {
                 var values = website.SelectMany(v => v.Split(new[] { ",", ";", "|", " " }, StringSplitOptions.RemoveEmptyEntries)).ToHashSet();
 
-                values = values.Select(UriUtility.NormalizeHttpUri).ToHashSet();
+                values = values.Select(ValidateAndConstructUri).ToHashSet();
 
                 foreach (var value in values.Where(v => !requestUriFilter(v)))
                     yield return new ExternalSearchQuery(this, entityType, ExternalSearchQueryParameter.Uri, value);
@@ -131,7 +131,6 @@ namespace CluedIn.ExternalSearch.Providers.Web
                 yield break;
 
             Uri uri;
-
             if (Uri.IsWellFormedUriString(uriText, UriKind.Absolute))
                 uri = new Uri(uriText);
             else if (!uriText.StartsWith("http://") && !uriText.StartsWith("https://"))
@@ -238,6 +237,25 @@ namespace CluedIn.ExternalSearch.Providers.Web
                 return this.DownloadPreviewImageBlob(context, metadata.Properties[WebVocabulary.Website.Logo]);
 
             return null;
+        }
+
+        private string ValidateAndConstructUri(string uriText)
+        {
+            // Regular expression to match valid domain names
+            string domainPattern = @"(www\.)?[a-zA-Z0-9\-]+\.[a-zA-Z]{2,}";
+            Match match = Regex.Match(uriText, domainPattern);
+
+            if (match.Success)
+            {
+                string domain = match.Value;
+                string tempUrl = "http://" + domain;
+                if (Uri.TryCreate(tempUrl, UriKind.Absolute, out Uri result))
+                {
+                   return result.ToString();
+                }
+            }
+
+            return uriText;
         }
 
         private IEntityMetadata CreateMetadata(ExecutionContext context, IExternalSearchQueryResult<WebResult> resultItem, IExternalSearchRequest request)

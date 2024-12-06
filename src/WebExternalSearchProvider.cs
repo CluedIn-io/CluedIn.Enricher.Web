@@ -18,13 +18,13 @@ using CluedIn.Core.Data.Parts;
 using CluedIn.Core.Data.Relational;
 using CluedIn.Core.ExternalSearch;
 using CluedIn.Core.Providers;
+using CluedIn.Core.Connectors;
 using CluedIn.Crawling.Helpers;
 using CluedIn.ExternalSearch.Providers.Web.Model;
 using CluedIn.ExternalSearch.Providers.Web.Vocabularies;
 using CluedIn.Processing.Web.Models;
 using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
-using CluedIn.Core.Connectors;
 using RestSharp;
 
 using CluedInVocabularies = CluedIn.Core.Data.Vocabularies.Vocabularies;
@@ -251,7 +251,7 @@ namespace CluedIn.ExternalSearch.Providers.Web
 
             var errorMessageBase = $"{WebExternalSearchConstants.ProviderName} returned \"{(int)response.StatusCode} {response.StatusDescription}\".";
             if (response.ErrorException != null)
-                return new ConnectionVerificationResult(false, $"{errorMessageBase} {(string.IsNullOrWhiteSpace(response.ErrorMessage) ? response.ErrorException.Message : "This could be due to breaking changes in the external system")}.");
+                return new ConnectionVerificationResult(false, $"{errorMessageBase} {(!string.IsNullOrWhiteSpace(response.ErrorException.Message) ? response.ErrorException.Message : "This could be due to breaking changes in the external system")}.");
 
             if (response.StatusCode is HttpStatusCode.Unauthorized)
                 return new ConnectionVerificationResult(false, $"{errorMessageBase} This could be due to invalid API key.");

@@ -249,13 +249,18 @@ namespace CluedIn.ExternalSearch.Providers.Web
 
             var response = client.Get(request);
 
+            return ConstructVerifyConnectionResponse(response);
+        }
+
+        private ConnectionVerificationResult ConstructVerifyConnectionResponse(IRestResponse response)
+        {
             var errorMessageBase = $"{WebExternalSearchConstants.ProviderName} returned \"{(int)response.StatusCode} {response.StatusDescription}\".";
             if (response.ErrorException != null)
                 return new ConnectionVerificationResult(false, $"{errorMessageBase} {(!string.IsNullOrWhiteSpace(response.ErrorException.Message) ? response.ErrorException.Message : "This could be due to breaking changes in the external system")}.");
 
             if (response.StatusCode is HttpStatusCode.Unauthorized)
                 return new ConnectionVerificationResult(false, $"{errorMessageBase} This could be due to invalid API key.");
-            
+
             var regex = new Regex(@"\<(html|head|body|div|span|img|p\>|a href)", RegexOptions.IgnoreCase | RegexOptions.Singleline | RegexOptions.IgnorePatternWhitespace);
             var isHtml = regex.IsMatch(response.Content);
 

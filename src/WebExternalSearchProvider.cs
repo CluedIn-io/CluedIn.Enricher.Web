@@ -37,7 +37,7 @@ namespace CluedIn.ExternalSearch.Providers.Web
 
     /// <summary>The web external search provider.</summary>
     /// <seealso cref="CluedIn.ExternalSearch.ExternalSearchProviderBase" />
-    public partial class WebExternalSearchProvider : ExternalSearchProviderBase, IExternalSearchResultLogger, IExtendedEnricherMetadata, IConfigurableExternalSearchProvider, IExtendedEnricherMetadata2
+    public partial class WebExternalSearchProvider : ExternalSearchProviderBase, IExternalSearchResultLogger, IExtendedEnricherMetadata, IConfigurableExternalSearchProvider, IExternalSearchProvider2
     {
         /**********************************************************************************************************
          * FIELDS
@@ -409,5 +409,6 @@ namespace CluedIn.ExternalSearch.Providers.Web
         public IEnumerable<Control> Properties { get; } = WebExternalSearchConstants.Properties;
         public Guide Guide { get; } = WebExternalSearchConstants.Guide;
         public IntegrationType Type { get; } = WebExternalSearchConstants.IntegrationType;
+        public bool SupportsTestConnection { get; } = true;
     }
 }

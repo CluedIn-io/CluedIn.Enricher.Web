@@ -17,16 +17,14 @@ using CluedIn.Core.Data;
 using CluedIn.Core.Data.Parts;
 using CluedIn.Core.Data.Relational;
 using CluedIn.Core.ExternalSearch;
-using CluedIn.Core.FileTypes;
 using CluedIn.Core.Providers;
-using CluedIn.Core.Utilities;
+using CluedIn.Core.Connectors;
 using CluedIn.Crawling.Helpers;
 using CluedIn.ExternalSearch.Providers.Web.Model;
 using CluedIn.ExternalSearch.Providers.Web.Vocabularies;
 using CluedIn.Processing.Web.Models;
 using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
-
 using RestSharp;
 
 using CluedInVocabularies = CluedIn.Core.Data.Vocabularies.Vocabularies;
@@ -35,10 +33,11 @@ using EntityType = CluedIn.Core.Data.EntityType;
 namespace CluedIn.ExternalSearch.Providers.Web
 {
     using CluedIn.ExternalSearch.Provider;
+    using System.Text.RegularExpressions;
 
     /// <summary>The web external search provider.</summary>
     /// <seealso cref="CluedIn.ExternalSearch.ExternalSearchProviderBase" />
-    public partial class WebExternalSearchProvider : ExternalSearchProviderBase, IExternalSearchResultLogger, IExtendedEnricherMetadata, IConfigurableExternalSearchProvider
+    public partial class WebExternalSearchProvider : ExternalSearchProviderBase, IExternalSearchResultLogger, IExtendedEnricherMetadata, IConfigurableExternalSearchProvider, IExternalSearchProviderWithVerifyConnection
     {
         /**********************************************************************************************************
          * FIELDS
@@ -238,6 +237,39 @@ namespace CluedIn.ExternalSearch.Providers.Web
                 return this.DownloadPreviewImageBlob(context, metadata.Properties[WebVocabulary.Website.Logo]);
 
             return null;
+        }
+
+        public ConnectionVerificationResult VerifyConnection(ExecutionContext context, IReadOnlyDictionary<string, object> config)
+        {
+            var client = new RestClient("https://google.com");
+            var request = new RestRequest("/", Method.GET);
+
+            request.AddHeader("Accept", "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8");
+            request.AddHeader("User-Agent", "Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/56.0.2924.76 Safari/537.36");
+
+            var response = client.Get(request);
+
+            return ConstructVerifyConnectionResponse(response);
+        }
+
+        private ConnectionVerificationResult ConstructVerifyConnectionResponse(IRestResponse response)
+        {
+            var errorMessageBase = $"{WebExternalSearchConstants.ProviderName} returned \"{(int)response.StatusCode} {response.StatusDescription}\".";
+            if (response.ErrorException != null)
+                return new ConnectionVerificationResult(false, $"{errorMessageBase} {(!string.IsNullOrWhiteSpace(response.ErrorException.Message) ? response.ErrorException.Message : "This could be due to breaking changes in the external system")}.");
+
+            if (response.StatusCode is HttpStatusCode.Unauthorized)
+                return new ConnectionVerificationResult(false, $"{errorMessageBase} This could be due to invalid API key.");
+
+            var regex = new Regex(@"\<(html|head|body|div|span|img|p\>|a href)", RegexOptions.IgnoreCase | RegexOptions.Singleline | RegexOptions.IgnorePatternWhitespace);
+            var isHtml = regex.IsMatch(response.Content);
+
+            string errorMessage = response.IsSuccessful ? string.Empty
+                : string.IsNullOrWhiteSpace(response.Content) || isHtml
+                    ? $"{errorMessageBase} This could be due to breaking changes in the external system."
+                    : $"{errorMessageBase} {response.Content}.";
+
+            return new ConnectionVerificationResult(response.IsSuccessful, errorMessage);
         }
 
         private IEntityMetadata CreateMetadata(ExecutionContext context, IExternalSearchQueryResult<WebResult> resultItem, IExternalSearchRequest request)

@@ -116,6 +116,7 @@ namespace CluedIn.ExternalSearch.Providers.Web.Provider
         public IEnumerable<Control> Properties { get; } = WebExternalSearchConstants.Properties;
         public Guide Guide { get; } = WebExternalSearchConstants.Guide;
         public new IntegrationType Type { get; } = WebExternalSearchConstants.IntegrationType;
+        public bool SupportsEnricherV2 => true;
         public Dictionary<string, object> ExtraInfo { get; } = new()
         {
             { "autoMap", true },

@@ -164,10 +164,17 @@ namespace CluedIn.ExternalSearch.Providers.Web
         {
             var resultItem = result.As<WebResult>();
 
-            var code = request.EntityMetaData.OriginEntityCode;
-
-            var clue = new Clue(code, context.Organization);
-            clue.Data.OriginProviderDefinitionId = this.Id;
+            var code = new EntityCode(request.EntityMetaData.OriginEntityCode.Type, "website", $"{query.QueryKey}{request.EntityMetaData.OriginEntityCode}".ToDeterministicGuid());
+            
+            var clue = new Clue(code, context.Organization)
+            {
+                Data =
+                {
+                   OriginProviderDefinitionId = Id
+                }
+            };
+            
+            clue.Data.EntityData.Codes.Add(request.EntityMetaData.OriginEntityCode);
 
             this.PopulateMetadata(context, clue.Data.EntityData, resultItem, request);
 
@@ -283,13 +290,15 @@ namespace CluedIn.ExternalSearch.Providers.Web
 
         private void PopulateMetadata(ExecutionContext context, IEntityMetadata metadata, IExternalSearchQueryResult<WebResult> resultItem, IExternalSearchRequest request)
         {
+            var code = new EntityCode(request.EntityMetaData.OriginEntityCode.Type, "website", $"{request.Queries.FirstOrDefault()?.QueryKey}{request.EntityMetaData.OriginEntityCode}".ToDeterministicGuid());
+
             var orgWebSite  = resultItem.Data.GetOrganizationWebsiteMetadata(context);
 
             var name = orgWebSite.Name;
 
             metadata.EntityType             = request.EntityMetaData.EntityType;
             metadata.Name                   = request.EntityMetaData.Name;
-            metadata.OriginEntityCode       = request.EntityMetaData.OriginEntityCode;
+            metadata.OriginEntityCode       = code;
             metadata.Uri                    = orgWebSite.RequestUri;
             metadata.Description            = orgWebSite.WebsiteDescription;
 

@@ -174,8 +174,6 @@ namespace CluedIn.ExternalSearch.Providers.Web
                 }
             };
             
-            clue.Data.EntityData.Codes.Add(request.EntityMetaData.OriginEntityCode);
-
             this.PopulateMetadata(context, clue.Data.EntityData, resultItem, request);
 
             if (clue.Data.EntityData.Properties.ContainsKey(WebVocabulary.Website.Logo))
@@ -301,7 +299,7 @@ namespace CluedIn.ExternalSearch.Providers.Web
             metadata.OriginEntityCode       = code;
             metadata.Uri                    = orgWebSite.RequestUri;
             metadata.Description            = orgWebSite.WebsiteDescription;
-
+            metadata.Codes.Add(request.EntityMetaData.OriginEntityCode);
             //// Aliases
             if (orgWebSite.SchemaOrgOrganization != null)
             {

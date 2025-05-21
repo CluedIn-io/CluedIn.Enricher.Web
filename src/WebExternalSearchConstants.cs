@@ -2,7 +2,6 @@
 using CluedIn.Core.Providers;
 using System;
 using System.Collections.Generic;
-using System.Text;
 
 namespace CluedIn.ExternalSearch.Providers.Web
 {
@@ -11,31 +10,31 @@ namespace CluedIn.ExternalSearch.Providers.Web
         public const string ComponentName = "WebEnricher";
         public const string ProviderName = "Web";
         public static readonly Guid ProviderId = Guid.Parse("41FD7617-F9AD-45AA-A20A-04F2C26BDDC6");
-        public const string Instruction = """
-            [
-              {
-                "type": "bulleted-list",
-                "children": [
-                  {
-                    "type": "list-item",
-                    "children": [
-                      {
-                        "text": "Add the entity type to specify the golden records you want to enrich. Only golden records belonging to that entity type will be enriched."
-                      }
-                    ]
-                  },
-                  {
-                    "type": "list-item",
-                    "children": [
-                      {
-                        "text": "Add the vocabulary keys to provide the input for the enricher to search for additional information. For example, if you provide the website vocabulary key for the Web enricher, it will use specific websites to look for information about companies. In some cases, vocabulary keys are not required. If you don't add them, the enricher will use default vocabulary keys."
-                      }
-                    ]
-                  }
-                ]
-              }
-            ]
-            """;
+        public static readonly string Instruction = $$"""
+                                                      [
+                                                        {
+                                                          "type": "bulleted-list",
+                                                          "children": [
+                                                            {
+                                                              "type": "list-item",
+                                                              "children": [
+                                                                {
+                                                                  "text": "Add the {{EntityTypeLabel.ToLower()}} to specify the golden records you want to enrich. Only golden records belonging to that {{EntityTypeLabel.ToLower()}} will be enriched."
+                                                                }
+                                                              ]
+                                                            },
+                                                            {
+                                                              "type": "list-item",
+                                                              "children": [
+                                                                {
+                                                                  "text": "Add the vocabulary keys to provide the input for the enricher to search for additional information. For example, if you provide the website vocabulary key for the Web enricher, it will use specific websites to look for information about companies. In some cases, vocabulary keys are not required. If you don't add them, the enricher will use default vocabulary keys."
+                                                                }
+                                                              ]
+                                                            }
+                                                          ]
+                                                        }
+                                                      ]
+                                                      """;
         public struct KeyName
         {
             public const string AcceptedEntityType = "acceptedEntityType";
@@ -47,17 +46,21 @@ namespace CluedIn.ExternalSearch.Providers.Web
         public static string Icon { get; set; } = "Resources.web.svg";
         public static string Domain { get; set; } = "N/A";
 
+        private static Version _cluedInVersion;
+        public static Version CluedInVersion => _cluedInVersion ??= typeof(Core.Constants).Assembly.GetName().Version;
+        public static string EntityTypeLabel => CluedInVersion < new Version(4, 5, 0) ? "Entity Type" : "Business Domain";
+
         public static AuthMethods AuthMethods { get; set; } = new AuthMethods
         {
             Token = new List<Control>()
             {
                 new Control()
                 {
-                    DisplayName = "Accepted Entity Type",
+                    DisplayName = $"Accepted {EntityTypeLabel}",
                     Type = "entityTypeSelector",
                     IsRequired = true,
                     Name = KeyName.AcceptedEntityType,
-                    Help = "The entity type that defines the golden records you want to enrich (e.g., /Organization).",
+                    Help = $"The {EntityTypeLabel.ToLower()} that defines the golden records you want to enrich (e.g., /Organization).",
                 },
                 new Control()
                 {

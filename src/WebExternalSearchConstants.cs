@@ -66,7 +66,7 @@ namespace CluedIn.ExternalSearch.Providers.Web
                 {
                     DisplayName = "Website Vocabulary Key",
                     Type = "vocabularyKeySelector",
-                    IsRequired = false,
+                    IsRequired = true,
                     Name = KeyName.WebsiteKey,
                     Help = "The vocabulary key that contains the websites of companies you want to enrich (e.g., organization.website).",
                 },

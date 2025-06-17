@@ -3,6 +3,6 @@
     <PackageReference Include="CluedIn.Testing.Base" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\..\..\src\ExternalSearch.Providers.Web.csproj" />
+    <ProjectReference Include="..\..\..\src\ExternalSearch.Providers.Web\ExternalSearch.Providers.Web.csproj" />
   </ItemGroup>
 </Project>

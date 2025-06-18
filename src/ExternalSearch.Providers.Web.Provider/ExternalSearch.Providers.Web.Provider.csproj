@@ -5,6 +5,6 @@
 	</ItemGroup>
 
 	<ItemGroup>
-	  <ProjectReference Include="..\src\ExternalSearch.Providers.Web.csproj" />
+		<ProjectReference Include="..\ExternalSearch.Providers.Web\ExternalSearch.Providers.Web.csproj" />
 	</ItemGroup>
 </Project>

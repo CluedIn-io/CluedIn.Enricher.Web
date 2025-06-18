@@ -15,7 +15,7 @@ using CluedIn.Testing.Base.ExternalSearch;
 using Moq;
 using Xunit;
 
-namespace ExternalSearch.Web.Integration.Tests
+namespace CluedIn.ExternalSearch.Web.Integration.Tests
 {
     public class WebTests : BaseExternalSearchTest<WebExternalSearchProvider>
     {
@@ -23,7 +23,7 @@ namespace ExternalSearch.Web.Integration.Tests
         public void Test()
         {
             var properties = new EntityMetadataPart();
-            properties.Properties.Add(CluedIn.Core.Data.Vocabularies.Vocabularies.CluedInOrganization.Website, "www.sitecore.com");
+            properties.Properties.Add(Core.Data.Vocabularies.Vocabularies.CluedInOrganization.Website, "www.sitecore.com");
             IEntityMetadata entityMetadata = new EntityMetadataPart()
             {
                 Name = "Sitecore",
@@ -31,12 +31,12 @@ namespace ExternalSearch.Web.Integration.Tests
                 Properties = properties.Properties
             };
 
-            this.Setup(null, entityMetadata);
+            Setup(null, entityMetadata);
 
             // Assert
-            this.testContext.ProcessingHub.Verify(h => h.SendCommand(It.IsAny<ProcessClueCommand>()), Times.AtLeastOnce);
+            testContext.ProcessingHub.Verify(h => h.SendCommand(It.IsAny<ProcessClueCommand>()), Times.AtLeastOnce);
 
-            Assert.True(this.clues.Count > 0);
+            Assert.True(clues.Count > 0);
         }
     }
 }

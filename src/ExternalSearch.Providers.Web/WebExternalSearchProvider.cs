@@ -155,7 +155,10 @@ namespace CluedIn.ExternalSearch.Providers.Web
             {
                 context.Log.LogDebug("HTTP Response Code: {ResponseCode}" ,response.StatusCode);
                 context.Log.LogDebug("HTTP Error: {Error}", response.ErrorMessage);
-                throw new Exception("Could not download page: " + response.ErrorMessage);
+
+                var errorMessage = $"Could not download page: {uri}. Please verify if the website is valid and accessible.";
+                errorMessage += string.IsNullOrEmpty(response.ErrorMessage) ? string.Empty : " Error: " + response.ErrorMessage;
+                throw new Exception(errorMessage);
             }
             yield return new ExternalSearchQueryResult<WebResult>(query, new WebResult(uri, response));
         }

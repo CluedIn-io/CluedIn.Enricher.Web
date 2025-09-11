@@ -28,7 +28,7 @@ namespace CluedIn.ExternalSearch.Providers.Web.Vocabularies
 
             this.Description                = this.Add(new VocabularyKey("Description"));
             this.Title                      = this.Add(new VocabularyKey("Title"));
-            this.Logo                       = this.Add(new VocabularyKey("Logo", VocabularyKeyVisibility.Hidden));
+            this.Logo                       = this.Add(new VocabularyKey("Logo"));
             this.CopyrightEntity            = this.Add(new VocabularyKey("CopyrightEntity"));
             this.WebsiteDescription         = this.Add(new VocabularyKey("WebsiteDescription"));
             this.Name                       = this.Add(new VocabularyKey("Name"));

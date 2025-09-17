@@ -154,8 +154,8 @@ namespace CluedIn.ExternalSearch.Providers.Web
 
             request.AddHeader("Accept", "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8");
             request.AddHeader("Accept-Language", "en-US,en;q=0.9");
-            request.AddHeader("Cache-Control", "no-cache");
-            request.AddHeader("Pragma", "no-cache");
+            request.AddHeader("Accept-Encoding", "gzip, deflate, br");
+            request.AddHeader("Connection", "keep-alive");
             request.AddHeader("Upgrade-Insecure-Requests", "1");
             request.AddHeader("Sec-Fetch-Site", "none");
             request.AddHeader("Sec-Fetch-Mode", "navigate");

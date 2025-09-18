@@ -224,6 +224,11 @@ namespace CluedIn.ExternalSearch.Providers.Web
 
                         clue.Details.RawData.Add(rawDataPart);
                         clue.Data.EntityData.PreviewImage = new ImageReferencePart(rawDataPart);
+                        clue.Data.EntityData.Properties[WebVocabulary.Website.Logo] = orgWebSite.Logo.ToString();
+                    }
+                    else
+                    {
+                        clue.Data.EntityData.Properties[WebVocabulary.Website.Logo] = string.Empty;
                     }
                 }
             }

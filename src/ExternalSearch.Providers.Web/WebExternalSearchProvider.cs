@@ -143,11 +143,24 @@ namespace CluedIn.ExternalSearch.Providers.Web
             else
                 throw new Exception("Invalid query uri: " + uriText);
 
-            var client      = new RestClient(uri);
-            var request     = new RestRequest("/", Method.GET);
+            var client = new RestClient(uri)
+            {
+                UserAgent = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36",
+                AutomaticDecompression = true
+            };
+
+            client.ConfigureWebRequest(r => r.KeepAlive = true);
+            var request = new RestRequest("/");
 
             request.AddHeader("Accept", "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8");
-            request.AddHeader("User-Agent", "Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/56.0.2924.76 Safari/537.36");
+            request.AddHeader("Accept-Language", "en-US,en;q=0.9");
+            request.AddHeader("Accept-Encoding", "gzip, deflate, br");
+            request.AddHeader("Connection", "keep-alive");
+            request.AddHeader("Upgrade-Insecure-Requests", "1");
+            request.AddHeader("Sec-Fetch-Site", "none");
+            request.AddHeader("Sec-Fetch-Mode", "navigate");
+            request.AddHeader("Sec-Fetch-User", "?1");
+            request.AddHeader("Sec-Fetch-Dest", "document");
 
             var response    = client.Get(request);
 
@@ -211,6 +224,11 @@ namespace CluedIn.ExternalSearch.Providers.Web
 
                         clue.Details.RawData.Add(rawDataPart);
                         clue.Data.EntityData.PreviewImage = new ImageReferencePart(rawDataPart);
+                        clue.Data.EntityData.Properties[WebVocabulary.Website.Logo] = orgWebSite.Logo.ToString();
+                    }
+                    else
+                    {
+                        clue.Data.EntityData.Properties[WebVocabulary.Website.Logo] = string.Empty;
                     }
                 }
             }

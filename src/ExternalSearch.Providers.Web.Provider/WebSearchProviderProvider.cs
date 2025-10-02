@@ -8,7 +8,7 @@ using CluedIn.Core.Data.Relational;
 using CluedIn.Core.ExternalSearch;
 using CluedIn.Core.Providers;
 using CluedIn.Core.Webhooks;
-using CluedIn.ExternalSearch;
+using CluedIn.ExternalSearch.Providers.Web.Vocabularies;
 using CluedIn.Providers.Models;
 
 namespace CluedIn.ExternalSearch.Providers.Web.Provider
@@ -116,5 +116,20 @@ namespace CluedIn.ExternalSearch.Providers.Web.Provider
         public IEnumerable<Control> Properties { get; } = WebExternalSearchConstants.Properties;
         public Guide Guide { get; } = WebExternalSearchConstants.Guide;
         public new IntegrationType Type { get; } = WebExternalSearchConstants.IntegrationType;
+        public bool SupportsEnricherV2 => true;
+        public Dictionary<string, object> ExtraInfo { get; } = new()
+        {
+            { "autoMap", true },
+            { "useEnricherOriginEntityCode", true },
+            { "supportConfidenceScore", false }, // for UI
+            { "minConfidenceScore", 0 }, // for UI
+            { "maxConfidenceScore", 100 }, // for UI
+            { "origin", WebExternalSearchConstants.ProviderName.ToCamelCase() },
+            { "originField", string.Empty },
+            { "nameKeyField", string.Empty },
+            { "vocabKeyPrefix", WebVocabulary.Website.KeyPrefix },
+            { "autoSubmission", false },
+            { "dataSourceSetId", string.Empty },
+        };
     }
 }

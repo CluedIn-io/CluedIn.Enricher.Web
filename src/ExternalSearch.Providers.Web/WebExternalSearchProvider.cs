@@ -27,7 +27,6 @@ using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
 using RestSharp;
 
-using CluedInVocabularies = CluedIn.Core.Data.Vocabularies.Vocabularies;
 using EntityType = CluedIn.Core.Data.EntityType;
 
 namespace CluedIn.ExternalSearch.Providers.Web
@@ -90,36 +89,47 @@ namespace CluedIn.ExternalSearch.Providers.Web
 
         public IEnumerable<IExternalSearchQuery> BuildQueries(ExecutionContext context, IExternalSearchRequest request, IDictionary<string, object> config, IProvider provider)
         {
-            if (!this.Accepts(config, request.EntityMetaData.EntityType))
+            if (!Accepts(config, request.EntityMetaData.EntityType))
                 yield break;
 
             var existingResults = request.GetQueryResults<WebResult>(this).ToList();
 
-            Func<string, bool> requestUriFilter = value => value == null
-                                                        || existingResults.Any(r => string.Equals(r.Data.RequestUri.ToString(), value, StringComparison.InvariantCultureIgnoreCase)
-                                                        || UriUtility.IsSocialProfileUri(value));
-
             // Query Input
             var entityType      = request.EntityMetaData.EntityType;
-            var website         = new HashSet<string>();
+            HashSet<string> website;
             if (config.TryGetValue(WebExternalSearchConstants.KeyName.WebsiteKey, out var customVocabKeyWebsite) && !string.IsNullOrWhiteSpace(customVocabKeyWebsite?.ToString()))
             {
                 website = request.QueryParameters.GetValue<string, HashSet<string>>(customVocabKeyWebsite.ToString(), new HashSet<string>());
             }
             else
             {
-                website = request.QueryParameters.GetValue(CluedIn.Core.Data.Vocabularies.Vocabularies.CluedInOrganization.Website, new HashSet<string>()).ToHashSet();
+                website = request.QueryParameters.GetValue(Core.Data.Vocabularies.Vocabularies.CluedInOrganization.Website, new HashSet<string>()).ToHashSet();
             }
 
-            if (website != null)
+            var values = website.SelectMany(v => v.Split(new[] { ",", ";", "|", " " }, StringSplitOptions.RemoveEmptyEntries)).ToHashSet();
+
+            values = values.Select(UriUtility.NormalizeHttpUri).ToHashSet();
+
+            var filteredValues = values.Where(v => !ShouldSkipUri(v)).ToList();
+
+            if (!filteredValues.Any())
             {
-                var values = website.SelectMany(v => v.Split(new[] { ",", ";", "|", " " }, StringSplitOptions.RemoveEmptyEntries)).ToHashSet();
+                var entityName = !string.IsNullOrEmpty(request.EntityMetaData.Name) ? request.EntityMetaData.Name : request.EntityMetaData.DisplayName;
+                var reason = website.Count == 0 ? "URL is empty" : "URL was identified as a social profile URL and filtered out";
 
-                values = values.Select(UriUtility.NormalizeHttpUri).ToHashSet();
-
-                foreach (var value in values.Where(v => !requestUriFilter(v)))
-                    yield return new ExternalSearchQuery(this, entityType, ExternalSearchQueryParameter.Uri, value);
+                throw new Exception($"Unable to generate queries for {entityName}. {reason}.");
             }
+
+            foreach (var value in filteredValues.Where(v => !IsExistingResultUri(v)))
+            {
+                yield return new ExternalSearchQuery(this, entityType, ExternalSearchQueryParameter.Uri, value);
+            }
+
+            yield break;
+
+            bool IsExistingResultUri(string value) => existingResults.Any(r => string.Equals(r.Data.RequestUri.ToString(), value, StringComparison.InvariantCultureIgnoreCase));
+
+            bool ShouldSkipUri(string value) => value == null || UriUtility.IsSocialProfileUri(value);
         }
 
         public IEnumerable<IExternalSearchQueryResult> ExecuteSearch(ExecutionContext context, IExternalSearchQuery query, IDictionary<string, object> config, IProvider provider)
@@ -138,10 +148,10 @@ namespace CluedIn.ExternalSearch.Providers.Web
                 if (Uri.IsWellFormedUriString("http://" + uriText, UriKind.Absolute))
                     uri = new Uri("http://" + uriText);
                 else
-                    throw new Exception("Invalid query uri: " + uriText);
+                    throw new Exception("Invalid query URL: " + uriText);
             }
             else
-                throw new Exception("Invalid query uri: " + uriText);
+                throw new Exception("Invalid query URL: " + uriText);
 
             var client = new RestClient(uri)
             {

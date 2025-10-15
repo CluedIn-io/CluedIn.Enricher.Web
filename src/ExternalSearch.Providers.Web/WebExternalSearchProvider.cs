@@ -115,7 +115,7 @@ namespace CluedIn.ExternalSearch.Providers.Web
             if (!filteredValues.Any())
             {
                 var entityName = !string.IsNullOrEmpty(request.EntityMetaData.Name) ? request.EntityMetaData.Name : request.EntityMetaData.DisplayName;
-                var reason = website.Count == 0 ? "URL is empty" : "URL was identified as a social profile URL and filtered out";
+                var reason = website.Count == 0 ? "Website URL is empty" : "Website URL was identified as a social profile URL and filtered out";
 
                 throw new Exception($"Unable to generate queries for {entityName}. {reason}.");
             }

@@ -14,7 +14,7 @@ namespace CluedIn.ExternalSearch.Providers.Web.Model
         {
         }
 
-        public WebResult(Uri requestUri, IRestResponse response)
+        public WebResult(Uri requestUri, RestResponse response)
         {
             this.RequestUri   = requestUri;
             this.RestResponse = new WebRestResponse(response);

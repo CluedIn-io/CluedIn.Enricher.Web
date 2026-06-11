@@ -30,7 +30,7 @@ namespace CluedIn.ExternalSearch.Providers.Web.Model
 
             var parser = new OrganizationWebsiteParser();
 
-            this.cachedOrganizationData = parser.Parse(context, this.RequestUri, this.RestResponse);
+            this.cachedOrganizationData = parser.Parse(context, this.RequestUri, this.RestResponse.ToRestResponse());
 
             return this.cachedOrganizationData;
         }

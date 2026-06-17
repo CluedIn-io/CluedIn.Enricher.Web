@@ -446,5 +446,6 @@ namespace CluedIn.ExternalSearch.Providers.Web
         public IEnumerable<Control> Properties { get; } = WebExternalSearchConstants.Properties;
         public Guide Guide { get; } = WebExternalSearchConstants.Guide;
         public IntegrationType Type { get; } = WebExternalSearchConstants.IntegrationType;
+        public override Version Version => new Version("5.0.0.0"); // Update version to expire cached results when we make changes like changing the result type
     }
 }

@@ -3,12 +3,22 @@ parameters:
   - name: runIntegrationTests
     displayName: Run Integration Tests
     type: boolean
-    default: false
+    default: true
 
   - name: pipelineTemplateRef
     displayName: Pipeline Template Ref
     type: string
-    default: refs/heads/refactor
+    default: refs/heads/feature/multi-version-packaging
+
+  - name: probeCluedInVersion
+    # Manual, one-off check that this repo still builds and tests cleanly against a CluedIn.Core
+    # version outside multiVersionCluedInTargets below (for example a new release, to see whether
+    # retargeting is needed). Leave blank for a normal run. The target framework is auto-detected
+    # by crawler.build.jobs.yml; a non-blank value replaces the normal multi-version graph with a
+    # single build-and-test job and publishes nothing.
+    displayName: Probe CluedIn Version (leave blank for a normal run)
+    type: string
+    default: ''
 
 trigger:
   branches:
@@ -28,9 +38,6 @@ resources:
       endpoint: "CluedIn-io"
       ref: ${{ parameters.pipelineTemplateRef }}
 
-pool:
-  vmImage: "windows-latest"
-
 variables:
   - name: testFolderPath
     value: "$(Build.SourcesDirectory)/test"
@@ -43,23 +50,24 @@ variables:
   - name: system.debug
     value: true
 
-steps:
-  - task: UseDotNet@2
-    displayName: Install .NET SDK 8.0
-    inputs:
-      version: 8.0.x
-
-  - task: NuGetAuthenticate@0
-    displayName: "Authenticate with nuget"
-
-  - template: crawler.build.yml@templates
+# jobs:, not pool:/steps: - crawler.build.jobs.yml is a jobs template, the only one with
+# multi-version support (crawler.build.yml has none). Each multi-version target runs on its own
+# isolated agent, so the pool is declared per-job inside the template rather than once at the top.
+jobs:
+  - template: crawler.build.jobs.yml@templates
     parameters:
+      pool:
+        vmImage: 'ubuntu-22.04'
       githubReleaseInMaster: true
       publicReleaseForMaster: true
+      # No environment setup/teardown script: the integration test project only exercises
+      # BaseExternalSearchTest's in-process mocks. No real environment exists to set up.
       executeIntegrationTests: ${{ parameters.runIntegrationTests }}
-      createIntegrationEnvironmentScriptFilePath: "./build/integration-test.ps1"
-      createIntegrationEnvironmentScriptArguments: "-Action SetUp"
-      deleteIntegrationEnvironmentScriptFilePath: "./build/integration-test.ps1"
-      deleteIntegrationEnvironmentScriptArguments: "-Action TearDown"
       publishCodeCoverage: true
       useGitVersionDotNetTool: true
+      publishToDevFeed: true
+      probeCluedInVersion: ${{ parameters.probeCluedInVersion }}
+      multiVersionCluedInTargets:
+        - cluedInVersion: '4.7.0'
+        - cluedInVersion: '4.8.0'
+        - cluedInVersion: '5.0.0-beta.*'

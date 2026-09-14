@@ -5,13 +5,7 @@
         <IsTestProject>true</IsTestProject>
     </PropertyGroup>
 
-    <ItemGroup>
-        <PackageReference Include="AutoFixture.Xunit3"/>
-        <PackageReference Include="coverlet.msbuild"/>
-        <PackageReference Include="Microsoft.NET.Test.Sdk"/>
-        <PackageReference Include="xunit.v3"/>
-        <PackageReference Include="xunit.runner.visualstudio"/>
-        <PackageReference Include="Moq"/>
-        <PackageReference Include="Shouldly"/>
-    </ItemGroup>
+    <!-- Package selection (xunit v2 vs v3) is done per test csproj, not here. Keeping xunit v3
+         here would combine a non-CLUEDIN_V50 leg's xunit v2 include with an unconditional xunit
+         v3 include, putting both generations in the compile references at once (CS0433). -->
 </Project>

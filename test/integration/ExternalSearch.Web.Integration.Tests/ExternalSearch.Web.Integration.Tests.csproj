@@ -1,6 +1,21 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
   <ItemGroup>
-    <PackageReference Include="CluedIn.Testing.Base" />
+    <!-- Suffixed per multi-version leg (for example CluedIn.Testing.Base.470); see
+         Packages.props' _CluedInPackageSuffix for why this is not plain CluedIn.Testing.Base. -->
+    <PackageReference Include="CluedIn.Testing.Base.$(_CluedInPackageSuffix)" />
+    <PackageReference Include="coverlet.msbuild" />
+    <PackageReference Include="Microsoft.NET.Test.Sdk" />
+    <PackageReference Include="Moq" />
+  </ItemGroup>
+  <!-- xunit v3 + Microsoft Testing Platform tooling for net10.0 (CluedIn 5.0+) -->
+  <ItemGroup Condition="$(DefineConstants.Contains('CLUEDIN_V50'))">
+    <PackageReference Include="xunit.v3" />
+    <PackageReference Include="xunit.runner.visualstudio" />
+  </ItemGroup>
+  <!-- xunit v2 for net6.0 (CluedIn < 5.0) -->
+  <ItemGroup Condition="!$(DefineConstants.Contains('CLUEDIN_V50'))">
+    <PackageReference Include="xunit" />
+    <PackageReference Include="xunit.runner.visualstudio" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\..\src\ExternalSearch.Providers.Web\ExternalSearch.Providers.Web.csproj" />

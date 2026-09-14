@@ -1,5 +1,5 @@
 mode: ContinuousDeployment
-next-version: 5.0
+next-version: 1.0
 branches:
   master:
     mode: ContinuousDelivery
@@ -24,4 +24,10 @@ branches:
     source-branches:
     - main
     - develop
-
+ignore:
+  sha: []
+  # CluedIn version is now encoded in the package suffix (.470/.480/.500), not this repo's own
+  # semantic version. commits-before skips the old 4.x tags (highest: 4.6.2, tagged
+  # 2026-06-17T17:21:36+10:00) so GitVersion does not treat them as dominant over next-version.
+  # The timestamp sits after that tag and before this migration.
+  commits-before: 2026-06-18T00:00:00

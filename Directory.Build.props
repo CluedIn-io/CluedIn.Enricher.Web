@@ -1,6 +1,11 @@
 <Project>
   <PropertyGroup Label="Compilation Metadata">
-    <TargetFramework>net10.0</TargetFramework>
+    <!-- Multi-version targeting: crawler.build.jobs.yml overrides this per build leg via
+         -p:CluedInMultiVersionTargetFramework=. Falls back to net10.0 for local development. -->
+    <TargetFramework Condition="'$(CluedInMultiVersionTargetFramework)' != ''">$(CluedInMultiVersionTargetFramework)</TargetFramework>
+    <TargetFramework Condition="'$(CluedInMultiVersionTargetFramework)' == ''">net10.0</TargetFramework>
+    <!-- net6.0 otherwise defaults to C# 10, while this project uses newer syntax. -->
+    <LangVersion>13.0</LangVersion>
   </PropertyGroup>
 
   <!-- TODO: Clean up warnings -->

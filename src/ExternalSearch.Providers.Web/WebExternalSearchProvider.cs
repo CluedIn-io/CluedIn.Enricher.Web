@@ -153,11 +153,20 @@ namespace CluedIn.ExternalSearch.Providers.Web
             else
                 throw new Exception("Invalid query URL: " + uriText);
 
-            var client = new RestClient(new RestClientOptions(uri)
+            RestClient client;
+#if CLUEDIN_V50
+            client = new RestClient(new RestClientOptions(uri)
             {
                 UserAgent = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36",
                 AutomaticDecompression = System.Net.DecompressionMethods.All
             });
+#else
+            client = new RestClient(uri)
+            {
+                UserAgent = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36",
+                AutomaticDecompression = true
+            };
+#endif
             var request = new RestRequest("/");
 
             request.AddHeader("Accept", "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8");
@@ -211,7 +220,11 @@ namespace CluedIn.ExternalSearch.Providers.Web
                 {
                     orgWebSite.Logo = new Uri(new Uri(orgWebSite.ResponseUri.AbsoluteUri), orgWebSite.Logo.ToString());
                     var client = new RestClient();
+#if CLUEDIN_V50
                     var req = new RestRequest(orgWebSite.Logo.ToString(), Method.Get);
+#else
+                    var req = new RestRequest(orgWebSite.Logo.ToString(), Method.GET);
+#endif
                     req.AddHeader("Accept", "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8");
                     req.AddHeader("User-Agent", "Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/56.0.2924.76 Safari/537.36");
 
@@ -276,7 +289,11 @@ namespace CluedIn.ExternalSearch.Providers.Web
         public ConnectionVerificationResult VerifyConnection(ExecutionContext context, IReadOnlyDictionary<string, object> config)
         {
             var client = new RestClient("https://google.com");
+#if CLUEDIN_V50
             var request = new RestRequest("/", Method.Get);
+#else
+            var request = new RestRequest("/", Method.GET);
+#endif
 
             request.AddHeader("Accept", "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8");
             request.AddHeader("User-Agent", "Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/56.0.2924.76 Safari/537.36");
@@ -286,7 +303,11 @@ namespace CluedIn.ExternalSearch.Providers.Web
             return ConstructVerifyConnectionResponse(response);
         }
 
+#if CLUEDIN_V50
         private ConnectionVerificationResult ConstructVerifyConnectionResponse(RestResponse response)
+#else
+        private ConnectionVerificationResult ConstructVerifyConnectionResponse(IRestResponse response)
+#endif
         {
             var errorMessageBase = $"{WebExternalSearchConstants.ProviderName} returned \"{(int)response.StatusCode} {response.StatusDescription}\".";
             if (response.ErrorException != null)

@@ -18,11 +18,21 @@ namespace CluedIn.ExternalSearch.Providers.Web.Model
 		{
 		}
 
-		public WebRestResponse(RestResponse response)
+		public WebRestResponse(
+#if CLUEDIN_V50
+			RestResponse response)
+#else
+			IRestResponse response)
+#endif
 		{
 			this.ContentType        = response.ContentType;
 			this.ContentLength      = response.ContentLength;
+
+#if CLUEDIN_V50
 			this.ContentEncoding    = [..response.ContentEncoding];
+#else
+			this.ContentEncoding    = string.IsNullOrEmpty(response.ContentEncoding) ? [] : [response.ContentEncoding];
+#endif
 			this.Content            = response.Content;
 			this.StatusCode         = response.StatusCode;
 			this.StatusDescription  = response.StatusDescription;
@@ -36,16 +46,21 @@ namespace CluedIn.ExternalSearch.Providers.Web.Model
 			if (response.Headers != null)
 			{
 				foreach (var h in response.Headers)
-					Headers.Add(new HeaderDto { Name = h.Name, Value = h.Value });
+					Headers.Add(new HeaderDto { Name = h.Name, Value = h.Value?.ToString() });
 			}
 
             if (response.Cookies == null) return;
 
+#if CLUEDIN_V50
             foreach (var c in response.Cookies)
             {
                 if (c is Cookie cookie)
                     Cookies.Add(new CookieDto { Name = cookie.Name, Value = cookie.Value });
             }
+#else
+            foreach (var c in response.Cookies)
+                Cookies.Add(new CookieDto { Name = c.Name, Value = c.Value });
+#endif
         }
 
 		public string            ContentType       { get; set; }
@@ -68,13 +83,22 @@ namespace CluedIn.ExternalSearch.Providers.Web.Model
 		/// it can be passed to APIs that require a <see cref="RestResponse"/> instance (e.g.
 		/// <c>OrganizationWebsiteParser.Parse</c>).
 		/// </summary>
+		#if CLUEDIN_V50
 		public RestResponse ToRestResponse()
+		#else
+		public IRestResponse ToRestResponse()
+		#endif
 		{
 			var r = new RestResponse
 			{
                 ContentType = ContentType,
+#if CLUEDIN_V50
                 ContentLength = ContentLength,
                 ContentEncoding = ContentEncoding,
+#else
+                ContentLength = ContentLength ?? 0,
+                ContentEncoding = string.Join(", ", ContentEncoding ?? []),
+#endif
                 Content = Content,
                 StatusCode = StatusCode,
                 StatusDescription = StatusDescription,

@@ -125,3 +125,64 @@ prevents the existing 4.x tags from dominating the new version line.
 On 2026-09-10, all three target legs restored successfully from the configured feeds and built
 successfully. The integration-test assembly completed for every leg with zero failures; its only
 test (`WebTests.Test`) is explicitly skipped by the repository.
+
+---
+
+## Addendum — PackageId fix and version baseline moved to 100.0.0
+
+Status: **Done**
+
+This repo was migrated to multi-version targeting independently of the wider org-wide migration
+effort, and picked up two gaps other repos had already found and fixed by the time this addendum
+landed:
+
+### PackageId derived in-props, not via pipeline override
+
+`ExternalSearch.Providers.Web.Provider` has a `ProjectReference` to `ExternalSearch.Providers.Web`.
+This repo never had a `PackageId` property of its own - it relied entirely on the pipeline's raw
+`-p:PackageId=` override. That override doesn't reach a `ProjectReference`'s own package identity
+when NuGet computes that dependency for the nuspec (confirmed via a real repro across multiple
+repos: `CluedIn-io/Azure-Extensions#631`, `CluedIn-io/CluedIn.Enricher.CVR#50`,
+`CluedIn-io/CluedIn.Crawling.MasterDataServices#80`), so `ExternalSearch.Providers.Web.Provider`'s
+nuspec would end up depending on a plain, unsuffixed `CluedIn.ExternalSearch.Providers.Web` instead
+of the correct `.470`/`.480`/`.500` suffixed name.
+
+Separately, `AzurePipelines.Templates#30` removed the `-p:PackageId=` pipeline override entirely
+(it never worked for `ProjectReference`s anyway), so without a fix every package from this repo
+would pack with a completely bare, unsuffixed `PackageId` - not just a broken internal dependency.
+
+Fixed by deriving `PackageId` from `_CluedInPackageSuffix` directly in `Packages.props` (where that
+variable is already computed), gated on `CluedInMultiVersionTargetFramework` so local development
+keeps the plain `$(AssemblyName)`. Verified with a real local `dotnet pack` repro: packing
+`ExternalSearch.Providers.Web.Provider` now produces a nuspec dependency on
+`CluedIn.ExternalSearch.Providers.Web.500`, not the bare unsuffixed name.
+
+### Version baseline moved from 1.0.0 to 100.0.0
+
+By the time this repo's gaps were found, the rest of the migration effort had already moved from
+resetting the version to `1.0.0` to starting at `100.0.0` instead. Reason: repos that were
+previously at 4.x/5.x under the old single-version-targeting scheme would appear to "go backwards"
+if their next version showed as `1.0.0` - `100.0.0` is unambiguously higher than any prior
+single-version release number this repo ever had.
+
+```yaml
+next-version: 100.0
+```
+
+No `ignore.commits-before` trick is needed: `next-version` only needs help overriding an existing
+tag when the configured value is *lower* than that tag (the original `1.0` reset needed it against
+the `4.6.2` tag), and `100.0` is already higher than every pre-existing tag here. The
+`ignore.commits-before` line was removed (kept `ignore.sha: []`).
+
+### Historical release notes restored
+
+The original migration deleted this repo's per-CluedIn-version release notes
+(`docs/0.1.0-release-notes.md` through `docs/5.0.0-release-notes.md`, 16 files). That deletion no
+longer makes sense now that the version baseline isn't being reset to a lower number that needs
+"hiding" the old numbering - restored all 16 files from the commit immediately before their
+deletion, alongside the new `docs/100.0.0-release-notes.md`.
+
+- [x] `Packages.props` - `PackageId` derived from `_CluedInPackageSuffix`
+- [x] `GitVersion.yml` - `next-version: 100.0`; `ignore.commits-before` removed (no longer needed)
+- [x] `docs/1.0.0-release-notes.md` renamed to `docs/100.0.0-release-notes.md`
+- [x] 16 historical per-version release notes files restored

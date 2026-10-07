@@ -14,7 +14,12 @@ namespace CluedIn.ExternalSearch.Providers.Web.Model
         {
         }
 
-        public WebResult(Uri requestUri, IRestResponse response)
+        public WebResult(Uri requestUri,
+#if CLUEDIN_V50
+            RestResponse response)
+#else
+            IRestResponse response)
+#endif
         {
             this.RequestUri   = requestUri;
             this.RestResponse = new WebRestResponse(response);
@@ -30,7 +35,7 @@ namespace CluedIn.ExternalSearch.Providers.Web.Model
 
             var parser = new OrganizationWebsiteParser();
 
-            this.cachedOrganizationData = parser.Parse(context, this.RequestUri, this.RestResponse);
+            this.cachedOrganizationData = parser.Parse(context, this.RequestUri, this.RestResponse.ToRestResponse());
 
             return this.cachedOrganizationData;
         }

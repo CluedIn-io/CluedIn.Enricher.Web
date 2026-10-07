@@ -1,8 +1,39 @@
 <Project>
   <PropertyGroup Label="Dependency Versions">
-    <_ComponentHost>3.2.1</_ComponentHost>
-    <_AutoFixture>4.11.0</_AutoFixture>
-    <_CluedIn>4.6.0</_CluedIn>
+    <_AutoFixture>5.0.0-preview0012</_AutoFixture>
+    <_CluedIn Condition="'$(_CluedIn)' == ''">5.0.0-*</_CluedIn>
+
+    <!-- Strip pre-release suffix for version comparison -->
+    <_HyphenIndex>$(_CluedIn.IndexOf('-'))</_HyphenIndex>
+    <_CluedInVersionOnly Condition="'$(_HyphenIndex)' != '-1'">$(_CluedIn.Substring(0, $(_HyphenIndex)))</_CluedInVersionOnly>
+    <_CluedInVersionOnly Condition="'$(_HyphenIndex)' == '-1'">$(_CluedIn)</_CluedInVersionOnly>
+    <!-- CluedIn.Testing.Base is itself multi-version targeted: each CluedIn leg is published
+         under a different package ID suffixed with the dotless Major.Minor.Patch (for example,
+         CluedIn.Testing.Base.470 for 4.7.0 and .500 for 5.0.0-*), rather than one package ID
+         with multiple versions. The suffix is the full three-part version with dots stripped. -->
+    <_CluedInPackageSuffix>$(_CluedInVersionOnly.Replace('.', ''))</_CluedInPackageSuffix>
+
+    <!-- Gates conditional compilation (#if CLUEDIN_Vxx) for places where a CluedIn.Core API call
+         differs across the targeted version range. -->
+    <DefineConstants Condition="$([System.Version]::Parse($(_CluedInVersionOnly))) &gt;= $([System.Version]::Parse('4.7.0'))">$(DefineConstants);CLUEDIN_V47</DefineConstants>
+    <DefineConstants Condition="$([System.Version]::Parse($(_CluedInVersionOnly))) &gt;= $([System.Version]::Parse('4.8.0'))">$(DefineConstants);CLUEDIN_V48</DefineConstants>
+    <DefineConstants Condition="$([System.Version]::Parse($(_CluedInVersionOnly))) &gt;= $([System.Version]::Parse('5.0.0'))">$(DefineConstants);CLUEDIN_V50</DefineConstants>
+
+    <!-- PackageId is derived here (this repo computes _CluedInPackageSuffix in Packages.props, not
+         Directory.Build.props, which is imported earlier - a PackageId assignment placed in
+         Directory.Build.props would read _CluedInPackageSuffix before it exists), not passed as a
+         raw -p:PackageId= pipeline override - a raw override on an outer project doesn't reach a
+         ProjectReference's own package identity when NuGet computes that dependency for the nuspec.
+         This repo's ExternalSearch.Providers.Web.Provider ProjectReferences ExternalSearch.Providers.Web
+         directly, so it has the same issue found and fixed across the rest of the multi-version-
+         targeting migration (CluedIn-io/Azure-Extensions#631, CluedIn-io/CluedIn.Enricher.CVR#50,
+         CluedIn-io/CluedIn.Crawling.MasterDataServices#80). Also fixes a related regression:
+         AzurePipelines.Templates#30 removed the -p:PackageId= pipeline override entirely, so without
+         this property EVERY package from this repo would pack with a bare, unsuffixed PackageId -
+         this repo never had the fix applied when it was migrated (PR #58), so it has been exposed to
+         that regression since. Gated on CluedInMultiVersionTargetFramework so local development (no
+         pipeline overrides) keeps the plain $(AssemblyName) as PackageId. -->
+    <PackageId Condition="'$(CluedInMultiVersionTargetFramework)' != ''">$(AssemblyName).$(_CluedInPackageSuffix)</PackageId>
   </PropertyGroup>
   <ItemGroup>
     <!--
@@ -10,18 +41,21 @@
 
         MUST SPECIFY IN CSPROJ AS <PackageReference Name="<depName>" />
     -->
-    <PackageReference Update="Microsoft.NET.Test.Sdk" Version="16.5.0" />
-    <PackageReference Update="AutoFixture.Xunit2" Version="$(_AutoFixture)" />
-    <PackageReference Update="AutoFixture.Idioms" Version="$(_AutoFixture)" />
-    <PackageReference Update="AutoFixture.AutoMoq" Version="$(_AutoFixture)" />
+    <PackageReference Update="Microsoft.NET.Test.Sdk" Version="18.3.0" />
+    <PackageReference Update="Microsoft.NET.Test.Sdk" Version="17.12.0" Condition="!$(DefineConstants.Contains('CLUEDIN_V50'))" />
+    <PackageReference Update="AutoFixture.Xunit3" Version="$(_AutoFixture)" />
+    <PackageReference Update="AutoFixture.Xunit2" Version="4.18.0" />
     <PackageReference Update="coverlet.msbuild" Version="2.8.0" />
-    <PackageReference Update="Serilog.Sinks.XUnit" Version="1.0.21" />
-    <PackageReference Update="xunit" Version="2.4.1" />
-    <PackageReference Update="xunit.runner.visualstudio" Version="2.4.1" />
-    <PackageReference Update="Xunit.SkippableFact" Version="1.3.12" />
+    <PackageReference Update="xunit.v3" Version="3.2.2" />
+    <PackageReference Update="xunit" Version="2.9.3" />
+    <PackageReference Update="xunit.runner.visualstudio" Version="3.1.5" />
+    <PackageReference Update="xunit.runner.visualstudio" Version="2.8.2" Condition="!$(DefineConstants.Contains('CLUEDIN_V50'))" />
     <PackageReference Update="Moq" Version="4.13.1" />
     <PackageReference Update="Shouldly" Version="3.0.2" />
-    <PackageReference Update="CluedIn.Testing.Base" Version="4.0.0" />
+    <!-- CluedIn.Testing.Base is multi-version targeted (net6.0 for 4.7.0/4.8.0 and net10.0 for
+         5.0.0-*) and publishes as CluedIn.Testing.Base.470/.480/.500. Update matches the
+         suffixed name that the integration csproj includes for the current leg. -->
+    <PackageReference Update="CluedIn.Testing.Base.$(_CluedInPackageSuffix)" Version="1.0.0-*" />
   </ItemGroup>
   <ItemGroup>
     <!--
@@ -29,7 +63,6 @@
 
         MUST SPECIFY IN CSPROJ AS <PackageReference Name="<depName>" />
     -->
-    <PackageReference Update="ComponentHost" Version="$(_ComponentHost)" />
     <PackageReference Update="CluedIn.Core" Version="$(_CluedIn)" />
     <PackageReference Update="CluedIn.ExternalSearch" Version="$(_CluedIn)" />
     <PackageReference Update="CluedIn.Processing" Version="$(_CluedIn)" />

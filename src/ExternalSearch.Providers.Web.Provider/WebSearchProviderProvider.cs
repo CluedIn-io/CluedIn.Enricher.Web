@@ -130,6 +130,7 @@ namespace CluedIn.ExternalSearch.Providers.Web.Provider
             { "vocabKeyPrefix", WebVocabulary.Website.KeyPrefix },
             { "autoSubmission", false },
             { "dataSourceSetId", string.Empty },
+            { "fieldGroups", WebExternalSearchConstants.FieldGroups }, // for UI
         };
     }
 }
